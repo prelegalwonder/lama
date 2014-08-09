@@ -1,0 +1,205 @@
+<?php
+
+Zend_Dojo::enableView($this);
+
+function makeCageLink(Zend_View_Abstract $view, $cage_id, $cage_assigned_id, $cagetype) {
+	if ($cage_id) {
+		switch ($cagetype) {
+			case Cages::BREEDING :
+				$href = $view->url ( array ('controller' => 'breeding-cage', 'action' => 'view', 'id' => $cage_id ), null, true );
+				break;
+			case Cages::WEANING :
+				$href = $view->url ( array ('controller' => 'weaning-cage', 'action' => 'view', 'id' => $cage_id ), null, true );
+				break;
+			case Cages::HOLDING :
+				$href = $view->url ( array ('controller' => 'holding-cage', 'action' => 'view', 'id' => $cage_id ), null, true );
+				break;
+			default:
+				$href='';
+				mdb_Messages::add ( '\''.$cagetype . '\' is unknown cage type', 'error' );
+		}
+		return '<a href="' . $href . '" title="' . $view->escape($cagetype) . '">' . $view->escape($cage_assigned_id) . '</a>';
+	} else {
+		return '';
+	}
+}
+?>
+<h2><?=$this->escape($this->title)?></h2>
+<?php if (count($this->strains)) : ?>
+<h3>Strains (<?=count($this->strains)?>)</h3>
+<table class="expand sortable">
+	<tr>
+		<th>Strain</th>
+		<th>p/bEMS</th>
+		<th>Mini/MaxiP</th>
+		<th>ESCLine</th>
+		<th>Backbone pEMS</th>
+		<th>Reporter</th>
+		<th>Modifed on</th>
+	</tr>
+<?php foreach ( $this->strains as $strain ) : ?>
+<tr>
+		<td><a href="<?=$this->url ( array ('controller' => 'strain', 'action' => 'view', 'id' => $strain['id'] ), null, true )?>"><?=$this->escape ( $strain['strain_name'] )?></a></td>
+		<td><?=$this->escape ( $strain['pems'] != '' ? $strain['pems'] : $strain['bems'] )?></td>
+		<td><?=$this->escape ( $strain['promoter'] )?></td>
+		<td><?=$this->escape ( $strain['esc_line'] )?></td>
+		<td><?=$this->escape ( $strain['backbone_pems'] )?></td>
+		<td><?=$this->escape ( $strain['reporter'] )?></td>
+		<td><?=$this->escape ( mdb_Globals::formatDateTime($strain['lastmodified']) )?></td>
+	</tr>
+<?php endforeach; ?>
+</table><?php endif; ?>
+<?php if (count($this->breeding_cages)) : ?>
+<h3>Breeding Cages (<?=count($this->breeding_cages)?>)</h3>
+<table class="expand sortable">
+	<tr>
+		<th>Cage</th>
+		<th>Active</th>
+		<th>Breeding Type</th>
+		<th>Mating Type</th>
+		<th>Setup Date</th>
+		<th>Modifed on</th>
+	</tr>
+<?php foreach ( $this->breeding_cages as $cage ) : ?>
+<tr>
+		<td><a href="<?=$this->url ( array ('controller' => 'breeding-cage', 'action' => 'view', 'id' => $cage['id'] ), null, true )?>"><?=$this->escape ( $cage['assigned_id'] )?></a></td>
+		<td><?=$this->escape ( $cage['active'] ? 'Y' : 'N' )?></td>
+		<td><?=$this->escape ( $cage['breeding_type'] )?></td>
+		<td><?=$this->escape ( $cage['mating_type'] )?></td>
+		<td><?=$this->escape ( mdb_Globals::formatDateTime($cage['set_up_on']) )?></td>
+		<td><?=$this->escape ( mdb_Globals::formatDateTime($cage['lastmodified']) )?></td>
+	</tr>
+<?php endforeach; ?>
+</table>
+<?php endif; ?>
+<?php if (count($this->litters)) : ?>
+<h3>Litters (<?=count($this->litters)?>)</h3>
+<table class="expand sortable">
+	<tr>
+		<th>Litter</th>
+		<th>Born On</th>
+		<th>Weaned On</th>
+		<th>Alive Pups</th>
+		<th>Strain</th>
+		<th>Modifed on</th>
+	</tr>
+<?php foreach ( $this->litters as $litter ) : ?>
+	<tr>
+		<td><a href="<?=$this->url ( array ('controller' => 'litter', 'action' => 'view', 'id' => $litter['id'] ), null, true )?>"><?=$this->escape ( $litter['assigned_id'] )?></a></td>
+		<td><?=$this->escape ( mdb_Globals::formatDateTime($litter['born_on']) )?></td>
+		<td><?=$this->escape ( mdb_Globals::formatDateTime($litter['weaned_on']) )?></td>
+		<td><?=$this->escape ( $litter['alive_pups'] )?></td>
+		<td><a href="<?=$this->url ( array ('controller' => 'strain', 'action' => 'view', 'id' => $litter['strain_id'] ), null, true )?>"><?=$this->escape ( $litter['strain_name'] )?></a></td>
+		<td><?=$this->escape ( mdb_Globals::formatDateTime($litter['lastmodified']) )?></td>
+	</tr>
+<?php endforeach; ?>
+</table>
+<?php endif; ?>
+<?php if (count($this->weaning_cages)) : ?>
+<h3>Weaning Cages (<?=count($this->weaning_cages)?>)</h3>
+<table class="expand sortable">
+	<tr>
+		<th>Cage</th>
+		<th>Litter</th>
+		<th>Sex</th>
+		<th>Weaned on</th>
+</tr>
+<?php foreach ( $this->weaning_cages as $cage ) : ?>
+<tr>
+		<td><a href="<?=$this->url ( array ('controller' => 'weaning-cage', 'action' => 'view', 'id' => $cage['id'] ), null, true )?>"><?=$this->escape ( $cage['assigned_id'] )?></a></td>
+		<td><a href="<?=$this->url ( array ('controller' => 'litter', 'action' => 'view', 'id' => $cage['litter_id'] ), null, true )?>"><?=$this->escape ( $cage['litter_assigned_id'] )?></a></td>
+		<td><?=$this->escape ( $cage['sex'] )?></td>
+		<td><?=$this->escape ( mdb_Globals::formatDateTime($cage['weaned_on']) )?></td>
+	</tr>
+<?php endforeach; ?>
+</table>
+<?php endif; ?>
+<?php if (count($this->mice)) : ?>
+<h3>Mice (<?=count($this->mice)?>)</h3>
+<table class="expand sortable">
+	<tr>
+		<th>Mouse</th>
+		<th>Sex</th>
+		<th>Alive</th>
+		<th>Status</th>
+		<th>Strain</th>
+		<th>Genotype</th>
+		<th>DOB</th>
+	</tr>
+<?php foreach ( $this->mice as $mouse ) : ?>
+	<tr>
+		<td><a href="<?=$this->url ( array ('controller' => 'mouse', 'action' => 'view', 'id' => $mouse['id'] ), null, true )?>"><?=$this->escape ( $mouse['assigned_id'] )?></a></td>
+		<td><?=$this->escape ( $mouse['sex'] )?></td>
+		<td><?=$this->escape ( $mouse['is_alive'] ? 'Y' : 'N' )?></td>
+		<td><?=$this->escape ( $mouse['status'] )?></td>
+		<td><a href="<?=$this->url ( array ('controller' => 'strain', 'action' => 'view', 'id' => $mouse['strain_id'] ), null, true )?>"><?=$this->escape ( $mouse['strain_name'] )?></a></td>
+		<td><?=$this->escape ( $mouse['genotype'] )?></td>
+		<td><?=$this->escape ( mdb_Globals::formatDateTime($mouse['born_on']) )?></td>
+	</tr>
+<?php endforeach; ?>
+</table>
+<?php endif; ?>
+<?php if (count($this->transfers)) : ?>
+<h3>Cage Transfers (<?=count($this->transfers)?>)</h3>
+<table class="expand sortable">
+	<tr>
+		<th>Mouse</th>
+		<th>On</th>
+		<th>From</th>
+		<th>To</th>
+		<th>Reason</th>
+		<th>User</th>
+		<th class="sorttable_nosort noprint"></th>
+	</tr>
+<?php foreach ($this->transfers as $transfer) :?>
+	<tr>
+		<td><a href="<?=$this->url ( array ('controller' => 'mouse', 'action' => 'view', 'id' => $transfer['mouse_id'] ), null, true )?>"><?=$this->escape ( $transfer['mouse_assigned_id'] )?></a></td>
+		<td><?=$this->escape ( mdb_Globals::formatDateTime($transfer['transferred_on']) )?></td>
+		<td><?=makeCageLink ( $this, $transfer['from_cage_id'], $transfer['from_cage_assigned_id'], $transfer['from_cagetype'])?></td>
+		<td><?=makeCageLink ( $this, $transfer['to_cage_id'], $transfer['to_cage_assigned_id'], $transfer['to_cagetype'])?></td>
+		<td><?=$this->escape ( $transfer['notes'] )?></td>
+		<td><?=$this->escape ( $transfer['username'] )?></td>
+<td style="text-align:right;">
+<form method="post" action="<?=$this->url ( array ('controller' => 'transfer', 'action' => 'view', 'id' =>  $transfer['id'] ), null, true ) ?>">
+<input type="hidden" name="redirect" value="<?= '/mouse/view/id/' . $this->cage_id ?>" />
+<input type="hidden" name="edit" value="true" />
+<?=$this->submitButton('submit_xfer_'.$transfer['id'], 'Edit', array(), array('style' => 'margin-top: -4px; margin-bottom: -2px')) ?>
+</form>
+</td>
+	</tr>
+<?php endforeach;?>
+</table>
+<?php endif; ?>
+<?php if (count($this->protocols)) : ?>
+<h3>Protocols (<?=count($this->protocols)?>)</h3>
+<table class="expand sortable">
+	<tr>
+		<th>Protocol</th>
+		<th>Modified on</th>
+	</tr>
+<?php foreach ( $this->protocols as $protocol ) : ?>
+	<tr>
+		<td><a href="<?=$this->url ( array ('controller' => 'protocol', 'action' => 'view', 'id' => $protocol['id'] ), null, true )?>"><?=$this->escape ( $protocol['protocol_name'] )?></a></td>
+		<td><?=$this->escape ( mdb_Globals::formatDateTime($protocol['lastmodified']) )?></td>
+	</tr>
+<?php endforeach; ?>
+</table>
+<?php endif; ?>
+<?php if (count($this->searches)) : ?>
+<h3>Searches (<?=count($this->searches)?>)</h3>
+<table class="expand sortable">
+	<tr>
+		<th>Title</th>
+		<th>Subject</th>
+		<th>User</th>
+		<th class="sorttable_nosort noprint"></th>
+	</tr>
+<?php foreach ($this->searches as $search) :?>
+	<tr>
+		<td><a href="<?=$this->url ( array ('controller' => 'search', 'action' => 'view', 'id' => $search['id'] ), null, true )?>"><?=$this->escape ( $search['title'] )?></a></td>
+		<td><?=$this->escape ( ucfirst($search['subject']) )?></td>
+		<td><?=$this->escape ( $search['username'] )?></td>
+	</tr>
+<?php endforeach;?>
+</table>
+<?php endif; ?>

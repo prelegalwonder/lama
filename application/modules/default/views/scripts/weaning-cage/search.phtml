@@ -1,0 +1,33 @@
+<h2><?=$this->escape($this->title)?></h2>
+<div>
+<form action="<?=$this->url ( array ('controller' => 'weaning-cage', 'action' => 'search' ), null, true )?>"
+	method="get"><input type=text size="50" maxlength="500" name="q"
+	value="<?=$this->escape ( $this->query )?>" /><input type="submit"
+	value="Search Weaning Cages" /></form>
+</div>
+<br />
+<?php if ($this->search_error != '') : ?>
+<div class="error"><?=$this->search_error?></div>
+<?php elseif ($this->query != '') : ?>
+<h3><?=$this->paginator->getAdapter ()->count ()?> results found for <em><?=$this->escape ( $this->query )?></em></h3>
+
+<?php if ($this->paginator->count ()) : ?>
+<table class="expand sortable">
+	<tr>
+		<th>Cage</th>
+		<th>Litter</th>
+		<th>Sex</th>
+		<th>Weaned on</th>
+</tr>
+<?php foreach ( $this->paginator as $cage ) : ?>
+<tr>
+		<td><a href="<?=$this->url ( array ('controller' => 'weaning-cage', 'action' => 'view', 'id' => $cage['id'] ), null, true )?>"><?=$this->escape ( $cage['assigned_id'] )?></a></td>
+		<td><a href="<?=$this->url ( array ('controller' => 'litter', 'action' => 'view', 'id' => $cage['litter_id'] ), null, true )?>"><?=$this->escape ( $cage['litter_assigned_id'] )?></a></td>
+		<td><?=$this->escape ( $cage['sex'] )?></td>
+		<td><?=$this->escape ( mdb_Globals::formatDateTime($cage['weaned_on']) )?></td>
+	</tr>
+<?php endforeach; ?>
+</table>
+<?php endif; ?>
+<?=$this->paginationControl ( $this->paginator, 'Elastic', 'paginator.phtml', array('q' => $this->query) )?>
+<?php endif; ?>

@@ -1,0 +1,40 @@
+<h2><?=$this->escape($this->title)?></h2>
+<div class="noprint">
+<form action="<?=$this->url ( array ('action' => 'search' ) )?>"
+	method="get"><input type=text size="50" maxlength="500" name="q" /><input
+	type="submit" value="Search Breeding Cages" />
+<?php if ($this->canSearch) : ?>
+<a href="<?=$this->url ( array ('controller' => 'search', 'action' => 'view', 'subject' => Searches::SUBJECT_BREEDING_CAGE ), null, true )?>">advanced</a>
+<?php endif; ?>
+</form>
+</div>
+<br />
+
+<?php if ($this->canNew) : ?>
+<h3 class="noprint">
+<a href="<?=$this->url ( array ('controller' => 'breeding-cage', 'action' => 'new' ), null, true )?>">
+New breeding cage</a></h3>
+<br />
+<?php endif; ?>
+
+<h3>Recently modified breeding cages</h3>
+<table class="expand sortable">
+	<tr>
+		<th>Cage</th>
+		<th>Active</th>
+		<th>Breeding Type</th>
+		<th>Mating Type</th>
+		<th>Setup Date</th>
+		<th>Modifed on</th>
+	</tr>
+<?php foreach ( $this->recently_modified_breeding_cages as $cage ) : ?>
+<tr>
+		<td><a href="<?=$this->url ( array ('controller' => 'breeding-cage', 'action' => 'view', 'id' => $cage['id'] ), null, true )?>"><?=$this->escape ( $cage['assigned_id'] )?></a></td>
+		<td><?=$this->escape ( $cage['active'] ? 'Y' : 'N' )?></td>
+		<td><?=$this->escape ( $cage['breeding_type'] )?></td>
+		<td><?=$this->escape ( $cage['mating_type'] )?></td>
+		<td><?=$this->escape ( mdb_Globals::formatDateTime($cage['set_up_on']) )?></td>
+		<td><?=$this->escape ( mdb_Globals::formatDateTime($cage['lastmodified']) )?></td>
+	</tr>
+<?php endforeach; ?>
+</table>

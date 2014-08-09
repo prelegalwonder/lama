@@ -1,0 +1,10 @@
+<h2><?=$this->escape($this->title)?></h2>
+<?php if ($this->logfile == '') : ?>
+Error logging is not turned on: <code>system.logfile</code> is not specified in <code>config.ini</code>.
+<?php elseif ($this->error_log == '') : ?>
+The error log is empty.
+<?php else :?>
+<a href="<?=$this->url(array('action' => 'clear'))?>">Clear log</a>
+<pre><?=$this->error_log;?></pre>
+<a href="<?=$this->url(array('action' => 'clear'))?>">Clear log</a>
+<?php endif;?>

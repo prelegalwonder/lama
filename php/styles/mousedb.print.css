@@ -1,0 +1,8 @@
+@CHARSET "UTF-8";
+
+.noprint { 
+	display: none;
+}
+
+/* override blueprint.css rendering of URLs */
+a:link:after, a:visited:after {content:"";font-size:100%;}

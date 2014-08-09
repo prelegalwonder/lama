@@ -1,0 +1,43 @@
+<?php Zend_Dojo_View_Helper_Dojo::setUseDeclarative(true); ?>
+<div id="comments">
+<?php
+Zend_Dojo::enableView($this);
+foreach($this->comments as $comment) {
+
+	if ($this->userid == $comment['user_id'] ) {
+		$whoSaid = 'You';
+	} else {
+		$whoSaid = $comment['username'];
+	}
+?>
+<div id="comment_<?=$comment['id']?>">
+<hr />
+<h4 style="margin-bottom: 0.5em">
+<?=$this->escape($whoSaid)?> said on <?=$this->escape(mdb_Globals::formatDateTime($comment['modified_on']))?>:
+<div style="display:inline-block; font-size:75%">
+<?php if ($this->canEditComment && $this->userid == $comment['user_id']): ?>
+<?=$this->button('button_edit_comment_'.$comment['id'], 'Edit', array('onClick' => 'window.location = "'.$this->editCommentURL.'/id/'.$comment['id'].'"'))?>
+<?php endif; ?>
+<?php if ($this->role_id == mdb_Acl::ROLE_ADMIN || ($this->canDeleteComment && $this->userid == $comment['user_id'])): ?>
+<form id="form_delete_comment_<?=$comment['id']?>" action="<?=$this->deleteCommentURL?>" method="post" style="display: inline-block;">
+<input type="hidden" name="id" value="<?=$comment['id']?>" />
+<?=$this->button('button_delete_comment_'.$comment['id'], 'Delete...', array('onClick' => 'dojo.byId("delete_comment_num").value = '.$comment['id'].'; dijit.byId("deleteCommentDialog").show()'))?>
+</form>
+<?php endif; ?>
+<div>
+</h4>
+<blockquote style="margin-top:0; margin-bottom:0.25em;">
+<?=nl2br($this->escape($comment['comment']))?>
+</blockquote>
+</div>
+<?php } ?>
+</div>
+<div id="deleteCommentDialog" dojoType="dijit.Dialog" title="Confirm Delete Comment" style="display:none;">
+<div style="padding:1em; max-width:500px;">
+<input id="delete_comment_num" type="hidden" value="" />
+Are you sure you want to delete this comment?
+<br /><br />
+<?=$this->button('deleteCommentSubmit', 'Delete', array('onClick' => 'dijit.byId("deleteCommentDialog").hide(); dojo.xhrPost({form:"form_delete_comment_"+dojo.byId("delete_comment_num").value, load:function(response, ioArgs) {xdiv = dojo.byId("comment_"+dojo.byId("delete_comment_num").value); xdiv.parentNode.removeChild(xdiv); return response;}, error:function(response, ioArgs) {dojo.publish("mdbMessage", [{ message: response, type: "error"}]); return response;} })'))?>
+<?=$this->button('deleteCommentCancel', 'Cancel', array('onclick' => "dijit.byId('deleteCommentDialog').hide()"))?>
+</div>
+</div>

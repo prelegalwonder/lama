@@ -1,0 +1,37 @@
+<?php Zend_Dojo::enableView($this);?>
+<div class="span-20 last">
+<div class="span-10"><h2><?=$this->escape($this->title)?></h2></div>
+<div class="span-10 last" style="text-align: right;">
+Last modified <?=$this->escape(mdb_Globals::formatDateTime($this->lastmodified))?> by <?=$this->escape($this->lastmodifiedby)?>
+</div>
+</div>
+<?=$this->form?>
+<?php if ($this->canDelete) { ?>
+<?php $this->dojo()->enable()->requireModule('dijit.Dialog'); ?>
+<div id="deleteDialog" dojoType="dijit.Dialog" title="Confirm Delete" style="display:none;">
+<div style="padding:1em; max-width:500px;">
+Are you sure you want to delete &ldquo;<?=$this->escape($this->title)?>&rdquo;?
+<br /><br />
+<?=$this->button('deleteSubmit', 'Delete', array('onclick' => 'window.location = \''.$this->deleteURL.'\''))?>
+<?=$this->button('deleteCancel', 'Cancel', array('onclick' => "dijit.byId('deleteDialog').hide()"))?>
+</div>
+</div>
+<?php } ?>
+<?php
+echo $this->contentPane('tag_pane', null,
+    array('href' => $this->url( array('controller' => 'tag', 'action' => 'view', 'table' => Tags::TRANSFER, 'item' => $this->transfer_id,  'format' => 'html' ), null, true ),
+    	'parseOnLoad' => 'true',
+    	'loadingMessage' => '',
+    	'preload' => 'true'),
+    array('style' => 'padding:2px;')
+        )
+?>
+<?php
+echo $this->contentPane('comment_pane', null,
+    array('href' => $this->url( array('controller' => 'comment', 'action' => 'view', 'table' => Comments::TRANSFER, 'item' => $this->transfer_id,  'format' => 'html' ), null, true ),
+    	'parseOnLoad' => 'true',
+    	'loadingMessage' => '',
+    	'preload' => 'true'),
+    array('style' => 'padding:2px;')
+    )
+?>

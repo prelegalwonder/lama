@@ -1,0 +1,18 @@
+<?php
+if ($this->comment) {?>
+<h2><?=$this->escape($this->title)?></h2>
+<p>Are you sure that you want to delete comment
+ <blockquote>'<?=$this->escape($this->comment->comment)?>'?</blockquote>
+</p>
+<form action="<?=$this->url(array('action'=>'delete'))?>" method="post">
+<div>
+  <input type="hidden" name="id" value="<?php echo $this->escape($this->comment->id); ?>" />
+  <input type="hidden" name="ref_table" value="<?php echo $this->escape($this->comment->ref_table); ?>" />
+  <input type="hidden" name="ref_item_id" value="<?php echo $this->escape($this->comment->ref_item_id); ?>" />
+  <input type="submit" name="del" value="Delete" />
+  <input type="submit" name="del" value="Cancel" />
+</div>
+</form>
+<?php } else { ?>
+<p>Cannot find comment.</p>
+<?php }?>

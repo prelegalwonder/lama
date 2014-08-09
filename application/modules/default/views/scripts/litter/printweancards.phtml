@@ -1,0 +1,6 @@
+<?php
+header("Content-Disposition: inline; filename=wean_cards.pdf"); 
+header("Cache-Control: no-cache, must-revalidate");
+header("Content-type: application/pdf"); 
+echo $this->pdf->render();
+?>

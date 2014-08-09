@@ -1,0 +1,26 @@
+<?php
+header("Content-Disposition: attachment; filename=".$this->db_config['dbname']."_".date('Y-m-d').".sql"); 
+header("Cache-Control: no-cache, must-revalidate");
+header("Content-type: binary/octet-stream");
+$return_var = 0;
+ob_end_flush();
+/*
+while (ob_get_level()) {
+    ob_end_flush();
+}
+// start output buffering
+if (ob_get_length() === false) {
+    ob_start();
+}
+*/
+ob_flush();
+flush();
+$fp = popen('mysqldump --skip-extended-insert --host='.$this->db_config['host'].' --port='.$this->db_config['port'].' --user='.$this->db_config['username'].' --password='.$this->db_config['password'].' '.$this->db_config['dbname'], "r");
+while(!feof($fp))
+{
+    echo fread($fp, 4096);
+    ob_flush();
+    flush();
+}
+fclose($fp);
+?>

@@ -1,0 +1,40 @@
+<h2><?=$this->escape($this->title)?></h2>
+<div class="noprint">
+<form action="<?=$this->url ( array ('action' => 'search' ) )?>"
+	method="get"><input type=text size="50" maxlength="500" name="q" /><input
+	type="submit" value="Search Strains" />
+<?php if ($this->canSearch) : ?>
+<a href="<?=$this->url ( array ('controller' => 'search', 'action' => 'view', 'subject' => Searches::SUBJECT_STRAIN ), null, true )?>">advanced</a>
+<?php endif; ?>
+</form>
+</div>
+<br />
+
+<?php if ($this->canNew) : ?>
+<h3 class="noprint"><a href="<?=$this->url ( array ('controller' => 'strain', 'action' => 'new' ), null, true )?>">
+New strain</a></h3>
+<br />
+<?php endif; ?>
+<h3>Recently modified strains</h3>
+<table class="expand sortable">
+<tr>
+<th>Strain</th>
+<th>p/bEMS</th>
+<th>Mini/MaxiP</th>
+<th>ESCLine</th>
+<th>Backbone pEMS</th>
+<th>Reporter</th>
+<th>Modifed on</th>
+</tr>
+<?php foreach ( $this->recently_modified_strains as $strain ) : ?>
+<tr>
+<td><a href="<?=$this->url ( array ('controller' => 'strain', 'action' => 'view', 'id' => $strain->id ), null, true )?>"><?=$this->escape ( $strain->strain_name )?></a></td>
+<td><?=$this->escape ( $strain->pems != '' ? $strain->pems : $strain->bems )?></td>
+<td><?=$this->escape ( $strain->promoter )?></td>
+<td><?=$this->escape ( $strain->esc_line )?></td>
+<td><?=$this->escape ( $strain->backbone_pems )?></td>
+<td><?=$this->escape ( $strain->reporter )?></td>
+<td><?=$this->escape ( mdb_Globals::formatDateTime($strain->lastmodified) )?></td>
+</tr>
+<?php endforeach; ?>
+</table>

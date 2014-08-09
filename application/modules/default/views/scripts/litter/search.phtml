@@ -1,0 +1,37 @@
+<h2><?=$this->escape($this->title)?></h2>
+<div>
+<form action="<?=$this->url ( array ('controller' => 'litter', 'action' => 'search' ), null, true )?>"
+	method="get"><input type=text size="50" maxlength="500" name="q"
+	value="<?=$this->escape ( $this->query )?>" /><input type="submit"
+	value="Search Litters" /></form>
+</div>
+<br />
+<?php if ($this->search_error != '') : ?>
+<div class="error"><?=$this->search_error?></div>
+<?php elseif ($this->query != '') : ?>
+<h3><?=$this->paginator->getAdapter ()->count ()?> results found for <em><?=$this->escape ( $this->query )?></em></h3>
+
+<?php if ($this->paginator->count ()) : ?>
+<table class="expand sortable">
+	<tr>
+		<th>Litter</th>
+		<th>Born On</th>
+		<th>Weaned On</th>
+		<th>Alive Pups</th>
+		<th>Strain</th>
+		<th>Modifed on</th>
+	</tr>
+<?php foreach ( $this->paginator as $litter ) : ?>
+<tr>
+		<td><a href="<?=$this->url ( array ('controller' => 'litter', 'action' => 'view', 'id' => $litter['id'] ), null, true )?>"><?=$this->escape ( $litter['assigned_id'] )?></a></td>
+		<td><?=$this->escape ( mdb_Globals::formatDateTime($litter['born_on']) )?></td>
+		<td><?=$this->escape ( mdb_Globals::formatDateTime($litter['weaned_on']) )?></td>
+		<td><?=$this->escape ( $litter['alive_pups'] )?></td>
+		<td><?=$this->escape ( $litter['strain_name'] )?></td>
+		<td><?=$this->escape ( mdb_Globals::formatDateTime($litter['lastmodified']) )?></td>
+	</tr>
+<?php endforeach; ?>
+</table>
+<?php endif; ?>
+<?=$this->paginationControl ( $this->paginator, 'Elastic', 'paginator.phtml', array('q' => $this->query) )?>
+<?php endif; ?>

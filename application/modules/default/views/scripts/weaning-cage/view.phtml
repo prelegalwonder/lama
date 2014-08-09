@@ -1,0 +1,117 @@
+<?php Zend_Dojo::enableView($this);?>
+<?php
+
+function makeCageLink(Zend_View_Abstract $view, $cage_id, $cage_assigned_id, $cagetype, $this_cage_id) {
+	if ($cage_id) {
+		if ($cage_id == $this_cage_id) {
+			return '<em>here</em>';
+		} else {
+			switch ($cagetype) {
+				case Cages::BREEDING :
+					$href = $view->url ( array ('controller' => 'breeding-cage', 'action' => 'view', 'id' => $cage_id ), null, true );
+					break;
+				case Cages::WEANING :
+					$href = $view->url ( array ('controller' => 'weaning-cage', 'action' => 'view', 'id' => $cage_id ), null, true );
+					break;
+				case Cages::HOLDING :
+					$href = $view->url ( array ('controller' => 'holding-cage', 'action' => 'view', 'id' => $cage_id ), null, true );
+					break;
+				default:
+					$href='';
+					mdb_Messages::add ( '\''.$cagetype . '\' is unknown cage type', 'error' );
+					break;
+			}
+			return '<a href="' . $href . '" title = "' . $view->escape($cagetype) . '">' . $view->escape($cage_assigned_id) . '</a>';
+		}
+	} else {
+		return '';
+	}
+}
+?>
+<div class="span-20 last">
+<div class="span-10"><h2><?=$this->escape($this->title)?></h2></div>
+<div class="span-10 last" style="text-align: right;">
+Last modified <?=$this->escape(mdb_Globals::formatDateTime($this->lastmodified))?> by <?=$this->escape($this->lastmodifiedby)?>
+</div>
+</div>
+<div class="span-20">
+<?=$this->form?>
+</div>
+<?php if ($this->canDelete) { ?>
+<a href="<?=$this->deleteURL?>">Delete this cage&hellip;</a>
+<?php } ?>
+<hr />
+<?php if ($this->litter_id) : ?>
+<h3>Litter <a href="<?=$this->url ( array ('controller' => 'litter', 'action' => 'view', 'id' => $this->litter_id ), null, true )?>">
+<?=$this->litter_name;?></a></h3>
+<?php else : ?>
+<h3 class="error">Litter unknown.</h3>
+<?php endif ; ?>
+<hr />
+<?php if (count($this->mice) == 0) :?>
+<h3>There are no mice in this cage.</h3>
+<?php else : ?>
+<h3>Mice in this cage</h3>
+<table class="expand sortable">
+	<tr>
+		<th>Mouse</th>
+		<th>Sex</th>
+		<th>Alive</th>
+		<th>Status</th>
+	</tr>
+<?php foreach ($this->mice as $mouse) :?>
+<tr>
+		<td><a href="<?=$this->url ( array ('controller' => 'mouse', 'action' => 'view', 'id' => $mouse['id'] ), null, true )?>"><?=$this->escape ( $mouse['assigned_id'] )?></a></td>
+		<td><?=$this->escape ( $mouse['sex'] )?></td>
+		<td><?=$this->escape ( $mouse['is_alive'] ? 'Y' : 'N' )?></td>
+		<td><?=$this->escape ( $mouse['status'] )?></td>
+	</tr>
+<?php endforeach;?>
+</table>
+<?php endif; ?>
+<?php if ( count($this->transfers) ) :?>
+<hr />
+<h3>Cage transfers</h3>
+<table class="expand sortable">
+	<tr>
+		<th>Mouse</th>
+		<th>On</th>
+		<th>From</th>
+		<th>To</th>
+		<th>Reason</th>
+		<th>User</th>
+		<th class="sorttable_nosort noprint"></th>
+	</tr>
+<?php foreach ($this->transfers as $transfer) :?>
+	<tr>
+		<td><a href="<?=$this->url ( array ('controller' => 'mouse', 'action' => 'view', 'id' => $transfer['mouse_id'] ), null, true )?>"><?=$this->escape ( $transfer['mouse_assigned_id'] )?></a></td>
+		<td><?=$this->escape ( mdb_Globals::formatDateTime($transfer['transferred_on']) )?></td>
+		<td><?=makeCageLink ( $this, $transfer['from_cage_id'], $transfer['from_cage_assigned_id'], $transfer['from_cagetype'], $this->cage_id )?></td>
+		<td><?=makeCageLink ( $this, $transfer['to_cage_id'], $transfer['to_cage_assigned_id'], $transfer['to_cagetype'], $this->cage_id )?></td>
+		<td><?=$this->escape ( $transfer['notes'] )?></td>
+		<td><?=$this->escape ( $transfer['username'] )?></td>
+<td style="text-align:right;"><form method="post" action="<?=$this->url ( array ('controller' => 'transfer', 'action' => 'view', 'id' =>  $transfer['id'] ), null, true ) ?>"><input
+type="hidden" name="redirect" value="<?= '/mouse/view/id/' . $this->cage_id ?>" /><input type="hidden" name="edit" value="true"
+/><?=$this->submitButton('submit_xfer_'.$transfer['id'], 'Edit', array(), array('style' => 'margin-top: -4px; margin-bottom: -2px')) ?></form></td>
+	</tr>
+<?php endforeach;?>
+</table>
+<?php endif; ?>
+<?php
+echo $this->contentPane('tag_pane', null,
+    array('href' => $this->url( array('controller' => 'tag', 'action' => 'view', 'table' => Tags::WEANING_CAGE, 'item' => $this->cage_id,  'format' => 'html' ), null, true ),
+    	'parseOnLoad' => 'true',
+    	'loadingMessage' => '',
+    	'preload' => 'true'),
+    array('style' => 'padding:2px;')
+        )
+?>
+<?php
+echo $this->contentPane('comment_pane', null,
+    array('href' => $this->url( array('controller' => 'comment', 'action' => 'view', 'table' => Comments::WEANING_CAGE, 'item' => $this->cage_id,  'format' => 'html' ), null, true ),
+    	'parseOnLoad' => 'true',
+    	'loadingMessage' => '',
+    	'preload' => 'true'),
+    array('style' => 'padding:2px;')
+    )
+?>

@@ -1,0 +1,352 @@
+<?php
+//Zend_Dojo_View_Helper_Dojo::setUseDeclarative(true);
+
+$this->addHelperPath('Zend/Dojo/View/Helper/', 'Zend_Dojo_View_Helper');
+
+$acl = mdb_Acl::getInstance();
+if (Zend_Auth::getInstance()->hasIdentity()) {
+	$role_id = Zend_Auth::getInstance()->getIdentity()->role_id;
+} else {
+	$role_id = null;
+}
+
+if (mdb_Globals::getUserPref('search.go.input.suggest')) {
+	$forms_Go = $this->form('forms_Go',
+		array('action' => $this->url( array('controller' => 'search', 'action' => 'go' ), null, true ), 'method' => 'get'),
+		$this->filteringSelect(
+			'goItem',
+			null,
+			array(
+				'autocomplete' => "false",
+				'hasDownArrow' => "false",
+				'store'        => 'goItemStore',
+				'searchAttr'   => 'item',
+				'searchDelay'  => 200,
+				'storeType'    => 'dojox.data.QueryReadStore',
+				'storeParams'  => array('url' => $this->url ( array ('controller' => 'search', 'action' => 'listgo', 'format' => 'json' ), null, true )),
+				'pageSize'     => 200,
+				'onchange'     => 'if (this.getValue() != \'\') document.getElementById(\'forms_Go\').submit()',
+			),
+			array('style' => 'width:120px; padding:3px;')
+		)
+	);
+} else {
+	$forms_Go = $this->form('forms_Go',
+		array('action' => $this->url( array('controller' => 'search', 'action' => 'go' ), null, true ), 'method' => 'get'),
+		$this->textBox('goItem', Searches::GO_PLACEHOLDER,
+			array(
+				'onfocus' => 'if (dijit.byId(\'goItem\').getValue() == \''.Searches::GO_PLACEHOLDER.'\') { dijit.byId(\'goItem\').setValue(\'\'); dojo.byId(\'goItem\').style.color = \'black\'; dijit.byId(\'goItem\').focus();}',
+				'onblur' => 'if (dijit.byId(\'goItem\').getValue() == \'\') { dojo.byId(\'goItem\').style.color = \'gray\'; dijit.byId(\'goItem\').setValue(\''.Searches::GO_PLACEHOLDER.'\');}',
+			),
+		array('style' => 'width:90px; padding:3px; color:gray;')
+		).
+		$this->submitButton('submitGo', 'Go', array(), array('style' => 'margin-top: 1px;'))
+	);
+}
+
+$select = Zend_Db_Table::getDefaultAdapter()->select()
+    ->from('litters',
+	  array('id', 'assigned_id', 'born_on', 'weaned_on', 'alive_pups', 'lastmodified', 'strain_id' ))
+	->joinLeft('strains', 'litters.strain_id = strains.id', array('strain_name'))
+			->order('litters.lastmodified desc');
+
+$mylitters = $select->query()->fetchAll();
+
+$tag_pane = $this->contentPane('tag_cloud', 'Retrieving tags...',
+    array('href' => $this->url( array('controller' => 'tag', 'action' => 'index', 'format' => 'html' ), null, true ),
+    	'preload' => false),
+    array('style' => 'padding:4px; display:none;'));
+
+$hasMessages = (bool) mdb_Messages::count();
+
+$this->dojo()->enable()
+	->setDjConfigOption('parseOnLoad', true)
+	->requireModule('dijit.form.Button')
+	->requireModule('dijit.form.Textarea')
+	->requireModule('dijit.Menu')
+	->setDjConfigOption('usePlainJson', true);
+
+if (Zend_Registry::isRegistered('system.dojo.theme')) {
+	$theme = Zend_Registry::get('system.dojo.theme');
+	$this->dojo()->addStyleSheetModule('dijit.themes.'.$theme);
+	$body_theme_snippet = ' class="'.$theme.'"';
+} else {
+	$body_theme_snippet = '';
+}
+
+if (Zend_Registry::isRegistered('system.dojo.cdn.version')) {
+	$this->dojo()->setCdnVersion(Zend_Registry::get('system.dojo.cdn.version'));
+}
+if (Zend_Registry::isRegistered('system.dojo.cdn.base')) {
+	$this->dojo()->setCdnBase(Zend_Registry::get('system.dojo.cdn.base'));
+}
+if (Zend_Registry::isRegistered('system.dojo.cdn.dojopath')) {
+	$this->dojo()->setCdnDojoPath(Zend_Registry::get('system.dojo.cdn.dojopath'));
+}
+if (Zend_Registry::isRegistered('system.dojo.local')) {
+	$this->dojo()->setLocalPath(Zend_Registry::get('system.dojo.local').'/dojo/dojo.js');
+}
+
+// if ($hasMessages) {
+    $this->dojo()->requireModule('dojox.widget.Toaster');
+	$this->dojo()->addDijit('toast', array('dojoType' => 'dojox.widget.Toaster',
+		'positionDirection' => mdb_Globals::getUserPref('interface.toaster.position').'-'.mdb_Globals::getUserPref('interface.toaster.direction'),
+		'duration' => mdb_Globals::getUserPref('interface.toaster.duration'),
+		'messageTopic' => 'mdbMessage'));
+	if (Zend_Registry::isRegistered('system.dojo.local')) {
+		$this->headLink()->appendStylesheet(Zend_Registry::get('system.dojo.local').'/dojox/widget/Toaster/Toaster.css', 'screen, projection');
+	} else {
+		$this->headLink()->appendStylesheet($this->dojo()->getCdnBase().$this->dojo()->getCdnVersion().'/dojox/widget/Toaster/Toaster.css', 'screen, projection');
+	}
+// }
+
+if ($this->title != '') {
+	$this->headTitle( $this->title );
+}
+$this->headTitle( Zend_Registry::get('system.title') );
+$this->headTitle()->setSeparator(' - ');
+
+$this->headMeta()->appendHttpEquiv('Content-Type', 'text/html; charset=UTF-8');
+
+$this->headLink(array('rel' => 'shortcut icon', 'href' => $this->baseUrl.'/images/favicon.ico'));
+
+$this->headLink()
+	->appendStylesheet($this->baseUrl.'/styles/blueprint/screen.css', 'screen, projection')
+	->appendStylesheet($this->baseUrl.'/styles/blueprint/print.css', 'print')
+	->appendStylesheet($this->baseUrl.'/styles/blueprint/ie.css', 'screen, projection', 'IE')
+	->appendStylesheet($this->baseUrl.'/styles/mousedb.css', 'screen, projection')
+	->appendStylesheet($this->baseUrl.'/styles/mousedb.print.css', 'print')
+	->appendStylesheet($this->baseUrl.'/styles/mousedb.ie.css', 'screen, projection', 'IE');
+
+$this->headScript()->appendFile($this->baseUrl.'/scripts/sorttable.js');
+
+if (Zend_Registry::isRegistered('system.debug.firebuglite')) {
+	$this->headScript()->appendFile('http://getfirebug.com/releases/lite/1.2/firebug-lite-compressed.js');
+}
+echo '<?xml version="1.0" encoding="UTF-8"?>';
+echo $this->doctype('XHTML1_TRANSITIONAL');
+?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<link type="text/css" href="scripts/themes/base/jquery.ui.all.css" rel="stylesheet" />
+<script type="text/javascript" src="scripts/jquery-1.8.0.js"></script>
+<script type="text/javascript" src="scripts/ui/jquery.ui.core.js"></script>
+<script type="text/javascript" src="scripts/ui/jquery.ui.datepicker.js"></script>
+<script type="text/javascript">
+var events = [ 
+<?php foreach ( $mylitters as $litter ) : ?>
+{ Title: "Litter: <?=$this->escape($litter['assigned_id']) ?> to be weaned.", Date: new Date("<?=$this->escape(date('m/d/Y', strtotime($litter['weaned_on']))) ?>") }, 
+<?php endforeach; ?>
+];
+
+$(function() {
+$("#datepicker").datepicker({
+    beforeShowDay: function(date) {
+        var month = $(this).closest('.ui-datepicker').find('.ui-datepicker-month').text();
+        var year  = $(this).closest('.ui-datepicker').find('.ui-datepicker-year').text();
+        var result = [true, '', null];
+        var matching = $.grep(events, function(event) {
+            return event.Date.valueOf() === date.valueOf();
+        });
+                
+        if (matching.length) {
+            result = [true, 'weanedon', null];
+        }
+        return result;
+},
+
+    onSelect: function(dateText) {
+        var date,
+            selectedDate = new Date(dateText),
+            i = 0,
+            event = null;
+                                        
+        while (i < events.length && !event) {
+            date = events[i].Date;
+
+            if (selectedDate.valueOf() === date.valueOf()) {
+                event = events[i];
+            }
+            i++;
+        }
+        if (event) {
+            alert(event.Title);
+        }
+    }
+});
+});
+</script>
+<?php
+
+if ( mdb_Globals::getUserPref('interface.table.expand') ) {
+	$this->headStyle('table.expand {overflow:visible; white-space:pre; } table.dijitCalendarContainer {overflow:auto; white-space:normal; } ');
+}
+echo $this->headTitle();
+echo $this->headMeta();
+echo $this->headLink();
+echo $this->headScript();
+echo $this->headStyle();
+
+echo $this->dojo();
+
+if ($hasMessages) { ?>
+<script type="text/javascript">
+function showMessages() {
+<?php foreach ( mdb_Messages::getMessages() as $msg ) : ?>
+	dojo.publish("mdbMessage", [{ message: "<?=$msg['message']?>", type: "<?=$msg['type']?>", duration: <?=$msg['duration']?> }] );
+<?php endforeach; ?>
+<?php mdb_Messages::clear(); ?>
+}
+
+dojo.addOnLoad(showMessages);
+</script>
+<?php }; ?>
+<?php if ($this->isdojoerror) : ?>
+<script type="text/javascript">
+if (typeof dojo == "object") {
+	window.location = '<?=$this->url( array('controller' => 'index'), null, true )?>';
+}
+</script>
+<?php else : ?>
+<script type="text/javascript">
+if (typeof dojo == "undefined") {
+	window.location = '<?=$this->url( array('controller' => 'error', 'action' => 'dojo' ), null, true )?>';
+}
+</script>
+<?php endif; ?>
+</head>
+<body<?=$body_theme_snippet?>>
+<div id="toast" class="noprint"></div>
+<?php if (Zend_Registry::isRegistered('db_error')) :?>
+<div class="error noprint">Database not accessible. Please contact system adiminstrator if this error persists.<br /><?=Zend_Registry::get('db_error')?></div>
+<?php endif ; ?>
+<?php if (Zend_Registry::isRegistered('system.message') && Zend_Registry::get('system.message')) :?>
+<div class="notice noprint"><?=Zend_Registry::get('system.message')?></div>
+<?php endif ; ?>
+<noscript>
+<div class="container" style="padding-top:12px;">
+<h1>Please <a target="_blank" href="http://www.google.ca/search?q=enable+javascript&btnI=I'm+Feeling+Lucky">enable JavaScript</a> to use this software.</h1>
+</div>
+</noscript>
+<div id="topcontainer" class="container" style="padding-top:12px; display:none">
+<script type="text/javascript">
+document.getElementById('topcontainer').style.display = '';
+</script>
+<div id="header" class="span-24 last">
+<div class="span-14" >
+<a id="header-title" href="<?=$this->url( array('controller' => 'index', 'action' => 'index' ), null, true )?>">
+<?=Zend_Registry::get('system.title')?></a>
+</div>
+<div class="span-10 small last noprint" style="text-align: right;">
+<?php if (Zend_Auth::getInstance()->hasIdentity()) : ?>
+Welcome, <?=Zend_Auth::getInstance()->getIdentity()->username?>
+<span class="noprint"><span class="quiet">|</span>
+<a href="<?=$this->url( array('controller' => 'user', 'action' => 'logout' ), null, true )?>">
+Log Out</a>
+<?php if ($acl->isAllowed( $role_id, 'default_user', 'settings' )): ?>
+<span class="quiet">|</span>
+<a href="<?=$this->url( array('controller' => 'user', 'action' => 'settings' ), null, true )?>">
+Settings</a>
+<span class="quiet">|</span>
+<a href="/static/help.pdf">
+Help</a>
+<?php endif; ?>
+</span>
+<?php  else : ?>
+<a href="<?=$this->url( array('controller' => 'user', 'action' => 'login' ), null, true )?>">
+Log In</a>
+<?php endif; ?>
+</div>
+</div>
+<div class="span-4 noprint">
+<div id="nav-menu">
+<ul>
+<?php if ($acl->isAllowed( $role_id, 'default_strain', 'index' )): ?>
+<li><a href="<?=$this->url( array('controller' => 'strain', 'action' => 'index' ), null, true )?>">Strains</a></li>
+<?php endif; ?>
+<?php if ($acl->isAllowed( $role_id, 'default_mouse', 'index' )): ?>
+<li><a href="<?=$this->url( array('controller' => 'mouse', 'action' => 'index' ), null, true )?>">Mice</a>
+<?php if ($acl->isAllowed( $role_id, 'default_mouse', 'new' )): ?>
+<a href="<?=$this->url( array('controller' => 'mouse', 'action' => 'new' ), null, true )?>"><img src="<?=$this->baseUrl?>/images/add.png" alt="new" /></a>
+<?php endif; ?>
+</li>
+<?php endif; ?>
+<?php if ($acl->isAllowed( $role_id, 'default_breeding-cage', 'index' )): ?>
+<li><a href="<?=$this->url( array('controller' => 'breeding-cage', 'action' => 'index' ), null, true )?>">Breeding Cages</a>
+<?php if ($acl->isAllowed( $role_id, 'default_breeding-cage', 'new' )): ?>
+<a href="<?=$this->url( array('controller' => 'breeding-cage', 'action' => 'new' ), null, true )?>"><img src="<?=$this->baseUrl?>/images/add.png" alt="new" /></a>
+<?php endif; ?>
+</li>
+<?php endif; ?>
+<?php if ($acl->isAllowed( $role_id, 'default_holding-cage', 'index' )): ?>
+<li><a href="<?=$this->url( array('controller' => 'holding-cage', 'action' => 'index' ), null, true )?>">Holding Cages</a>
+<?php if ($acl->isAllowed( $role_id, 'default_holding-cage', 'new' )): ?>
+<a href="<?=$this->url( array('controller' => 'holding-cage', 'action' => 'new' ), null, true )?>"><img src="<?=$this->baseUrl?>/images/add.png" alt="new" /></a>
+<?php endif; ?>
+</li>
+<?php endif; ?>
+<?php if ($acl->isAllowed( $role_id, 'default_litter', 'index' )): ?>
+<li><a href="<?=$this->url( array('controller' => 'litter', 'action' => 'index' ), null, true )?>">Litters</a></li>
+<?php endif; ?>
+<?php if ($acl->isAllowed( $role_id, 'default_litter', 'weanlist' )): ?>
+<li><a href="<?=$this->url( array('controller' => 'litter', 'action' => 'weanlist' ), null, true )?>">Wean List</a></li>
+<?php endif; ?>
+<?php if ($acl->isAllowed( $role_id, 'default_weaning-cage', 'index' )): ?>
+<li><a href="<?=$this->url( array('controller' => 'weaning-cage', 'action' => 'index' ), null, true )?>">Weaning Cages</a></li>
+<?php endif; ?>
+<?php if ($acl->isAllowed( $role_id, 'default_protocol', 'save' )): ?>
+<li><a href="<?=$this->url( array('controller' => 'protocol', 'action' => 'index' ), null, true )?>">Protocols</a></li>
+<?php endif; ?>
+<?php if ($acl->isAllowed( $role_id, 'default_search', 'index' )): ?>
+<li><a href="<?=$this->url( array('controller' => 'search', 'action' => 'index' ), null, true )?>">Search</a></li>
+<?php endif; ?>
+</ul>
+<?php if ($acl->isAllowed( $role_id, 'default_search', 'go' ) && ! $this->isdojoerror): ?>
+<span class="small">Enter an item ID:</span>
+<?=$forms_Go?>
+<?php endif; ?>
+<?php if ($acl->isAllowed( $role_id, 'default_tag', 'index' ) && ! $this->isdojoerror): ?>
+<?php if (strstr($_SERVER['HTTP_USER_AGENT'], 'MSIE')) :?>
+<ul style="margin-top:12px;">
+<li><a href="<?=$this->url( array('controller' => 'tag', 'action' => 'index' ), null, true )?>">Tags</a></li>
+</ul>
+<?php else : ?>
+<button id="tagcloudbutton" dojoType="dijit.form.DropDownButton" label="Tags" style="margin-top:1em;">
+<span>Tags</span>
+<div dojoType="dijit.Menu" style="width:auto;">
+<?=$tag_pane?>
+<script type="dojo/method" event="onOpen" args="item">
+dojo.byId('tag_cloud').style.display = '';
+if (! dijit.byId('tag_cloud').isLoaded) {
+	dijit.byId('tag_cloud').refresh();
+}
+</script>
+</div>
+</button>
+<?php endif; ?>
+<?php endif; ?>
+<?php if ($role_id == mdb_Acl::ROLE_ADMIN): ?>
+<hr />
+<span style="font-size: x-small;">System Administration</span>
+<ul style="margin-top: 1em;">
+<li><a href="<?=$this->url( array('module' => 'admin', 'controller' => 'user'), null, true )?>">Users</a></li>
+<li><a href="<?=$this->url( array('module' => 'admin', 'controller' => 'error-log', 'action' => 'index' ), null, true )?>">Error Log</a></li>
+<li><a href="<?=$this->url( array('module' => 'admin', 'controller' => 'info', 'action' => 'system' ), null, true )?>">System Info</a></li>
+</ul>
+<?php endif; ?>
+</div>
+</div>
+<div id="content" class="span-20 last"">
+<?php if (Zend_Auth::getInstance()->hasIdentity()) : ?>
+<div id="datepicker" style="position: relative; float: right; padding-bottom: 1cm"></div>
+<?php endif; ?>
+<?=$this->layout()->content?>
+</div>
+<div id="footer" class="span-24 last">
+<?php if ( Zend_Registry::get('system.display.footer.launchpad') ) : ?>
+<div class="small" style="text-align:right; color:#A9A9A9;">To report a bug or for more information about this project, visit <a style="color:#A9A9A9;" target="_blank" href="http://launchpad.net/mousedb">launchpad.net/mousedb</a></div>
+<?php endif; ?>
+</div>
+</div>
+</body>
+</html>

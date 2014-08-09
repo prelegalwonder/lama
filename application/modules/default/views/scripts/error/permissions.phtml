@@ -1,0 +1,7 @@
+<h2><?=$this->escape($this->title)?></h2>
+<p><?=$this->errorMessage ?></p>
+<ul>
+<li><a href="<?=$this->url ( array ('controller' => 'user', 'action' => 'login'), null, true )?>">Log in as another user</a></li>
+<li><a href="javascript:history.go(-1)">Go back to previous page</a></li>
+<li>Contact the system administrator if you believe you should have access to this feature</li>
+</ul>

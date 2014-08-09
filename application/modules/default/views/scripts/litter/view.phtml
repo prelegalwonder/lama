@@ -1,0 +1,494 @@
+<?php Zend_Dojo::enableView($this);?>
+<?php
+require_once dirname(__FILE__).'/../../../controllers/MouseController.php';
+
+function zero2empty ($x) {
+
+	if ($x == 0) {
+		return '';
+	} else {
+		return $x;
+	}
+}
+
+?>
+<script type="text/javascript">
+
+function submitenter(myfield, e, btn) {
+
+	var keycode;
+	if (window.event) {
+		keycode = window.event.keyCode;
+	} else if (e) {
+		keycode = e.which;
+	} else {
+		return true;
+	}
+
+	if (keycode == 13) {
+		document.getElementById(btn).click();
+		return false;
+	} else {
+		return true;
+	}
+}
+
+function getInt(val) {
+
+	var intval = parseInt(val);
+
+	if (isNaN(intval)) {
+		intval = 0;
+	}
+
+	return intval;
+}
+
+function zero2blank(val) {
+
+	if (val == 0) {
+		return '';
+	} else {
+		return val;
+	}
+}
+
+function WeanCalc(fieldid) {
+	switch(fieldid) {
+	case 'total_pups':
+		dijit.byId('alive_pups').setValue(document.getElementById('total_pups').value);
+		dijit.byId('total_female_count').setValue('');
+		dijit.byId('total_male_count').setValue('');
+		dijit.byId('sacrificed_nosex_count').setValue('');
+		dijit.byId('weaned_female_count').setValue('');
+		dijit.byId('weaned_male_count').setValue('');
+		dijit.byId('holding_female_count').setValue('');
+		dijit.byId('holding_male_count').setValue('');
+		dijit.byId('sacrificed_female_count').setValue('');
+		dijit.byId('sacrificed_male_count').setValue('');
+		break;
+	case 'alive_pups' :
+		dijit.byId('total_female_count').setValue('');
+		dijit.byId('total_male_count').setValue('');
+		dijit.byId('sacrificed_nosex_count').setValue('');
+		dijit.byId('weaned_female_count').setValue('');
+		dijit.byId('weaned_male_count').setValue('');
+		dijit.byId('holding_female_count').setValue('');
+		dijit.byId('holding_male_count').setValue('');
+		dijit.byId('sacrificed_female_count').setValue('');
+		dijit.byId('sacrificed_male_count').setValue('');
+		break;
+	case 'total_female_count' :
+		dijit.byId('total_male_count').setValue(zero2blank(getInt(document.getElementById('alive_pups').value) - getInt(document.getElementById('total_female_count').value)));
+		dijit.byId('sacrificed_nosex_count').setValue('');
+		dijit.byId('weaned_female_count').setValue(document.getElementById('total_female_count').value);
+		dijit.byId('weaned_male_count').setValue(zero2blank(getInt(document.getElementById('alive_pups').value) - getInt(document.getElementById('total_female_count').value)));
+		dijit.byId('holding_female_count').setValue('');
+		dijit.byId('holding_male_count').setValue('');
+		dijit.byId('sacrificed_female_count').setValue('');
+		dijit.byId('sacrificed_male_count').setValue('');
+		break;
+	case 'total_male_count' :
+		dijit.byId('sacrificed_nosex_count').setValue(zero2blank(getInt(document.getElementById('alive_pups').value) - getInt(document.getElementById('total_female_count').value) - getInt(document.getElementById('total_male_count').value)));
+		dijit.byId('weaned_male_count').setValue(document.getElementById('total_male_count').value);
+		dijit.byId('holding_male_count').setValue('');
+		dijit.byId('sacrificed_male_count').setValue('');
+		break;
+	case 'weaned_female_count' :
+		dijit.byId('holding_female_count').setValue(zero2blank(getInt(document.getElementById('total_female_count').value) - getInt(document.getElementById('weaned_female_count').value)));
+		dijit.byId('sacrificed_female_count').setValue('');
+		break;
+	case 'weaned_male_count' :
+		dijit.byId('holding_male_count').setValue(zero2blank(getInt(document.getElementById('total_male_count').value) - getInt(document.getElementById('weaned_male_count').value)));
+		dijit.byId('sacrificed_male_count').setValue('');
+		break;
+	case 'holding_female_count' :
+		dijit.byId('sacrificed_female_count').setValue(zero2blank(getInt(document.getElementById('total_female_count').value) - getInt(document.getElementById('weaned_female_count').value) - getInt(document.getElementById('holding_female_count').value)));
+		break;
+	case 'holding_male_count' :
+		dijit.byId('sacrificed_male_count').setValue(zero2blank(getInt(document.getElementById('total_male_count').value) - getInt(document.getElementById('weaned_male_count').value) - getInt(document.getElementById('holding_male_count').value)));
+		break;
+	}
+	WeanOrSaveAlive();
+}
+
+function WeanOrSaveAlive() {
+	otherFields = '' + document.getElementById('total_female_count').value + document.getElementById('total_male_count').value +
+		document.getElementById('sacrificed_nosex_count').value + document.getElementById('sacrificed_nosex_count').value +
+		document.getElementById('weaned_female_count').value + document.getElementById('weaned_male_count').value +
+		document.getElementById('holding_female_count').value + document.getElementById('holding_male_count').value +
+		document.getElementById('sacrificed_female_count').value + document.getElementById('sacrificed_male_count').value;
+
+	if (otherFields == '') {
+		dijit.byId('wean_submit').setValue('Save Born & Alive');
+		dijit.byId('wean_submit').setLabel('Save Born & Alive');
+	} else {
+		dijit.byId('wean_submit').setValue('Wean');
+		dijit.byId('wean_submit').setLabel('Wean');
+	}
+}
+
+function clickCounted(clicked) {
+
+	if (clicked) {
+		document.getElementById('wean_details').style.display = 'none';
+		dijit.byId('wean_submit').setValue('Save');
+		dijit.byId('wean_submit').setLabel('Save');
+	} else {
+		document.getElementById('wean_details').style.display = '';
+		// dijit.byId('wean_submit').setLabel('Wean');
+		WeanOrSaveAlive();
+	}
+
+	return true;
+}
+</script>
+<div class="span-20 last">
+<div class="span-10"><h2><?=$this->escape($this->title)?></h2></div>
+<div class="span-10 last" style="text-align: right;">
+Last modified <?=$this->escape(mdb_Globals::formatDateTime($this->lastmodified))?> by <?=$this->escape($this->lastmodifiedby)?>
+<?php
+$related_snippet = array();
+foreach ($this->related_litters as $related_litter) {
+	if ($related_litter['id'] == $this->litter->id) {
+		$related_snippet[] = '<span style="color:gray">'.$related_litter['assigned_id'].'</span>';
+	} else {
+		$related_snippet[] = '<a href="'.$this->url ( array ('controller' => 'litter', 'action' => 'view', 'id' => $related_litter['id'] ), null, true ).'">'.$related_litter['assigned_id'].'</a>';
+	}
+}
+if (count($related_snippet)) {
+	echo '<br /><span class="small">'.implode(' ', $related_snippet).'</span>';
+}
+?>
+</div>
+</div>
+<?=$this->form?>
+<?php if ($this->canDelete) { ?>
+<?php $this->dojo()->enable()->requireModule('dijit.Dialog'); ?>
+<div id="deleteDialog" dojoType="dijit.Dialog" title="Confirm Delete" style="display:none;">
+<div style="padding:1em; max-width:500px;">
+Are you sure you want to delete &ldquo;<?=$this->escape($this->title)?>&rdquo;?
+<br /><br />
+<?=$this->button('deleteSubmit', 'Delete', array('onclick' => 'window.location = \''.$this->deleteURL.'\''))?>
+<?=$this->button('deleteCancel', 'Cancel', array('onclick' => "dijit.byId('deleteDialog').hide()"))?>
+</div>
+</div>
+<?php } ?>
+<hr />
+<?php if ($this->breeding_cage_id) : ?>
+<h3>Breeding cage <a href="<?=$this->url ( array ('controller' => 'breeding-cage', 'action' => 'view', 'id' => $this->breeding_cage_id ), null, true )?>">
+<?=$this->breeding_cage_name;?></a></h3>
+<?php else : ?>
+<h3 class="notice">Breeding cage unknown.</h3>
+<?php endif ; ?>
+<?php if (count($this->parents) == 0) : ?>
+<h3 class="notice">Parents unknown.
+<?php if ( $this->canEditParents ) : ?>
+<a style="font-size: x-small" href="<?=$this->url ( array ('controller' => 'litter', 'action' => 'editparents', 'id' => $this->litter->id ), null, true )?>">change</a>
+<?php endif; ?>
+</h3>
+<?php else : ?>
+<h3>Parents
+<?php if ( $this->canEditParents ) : ?>
+<a style="font-size: x-small" href="<?=$this->url ( array ('controller' => 'litter', 'action' => 'editparents', 'id' => $this->litter->id ), null, true )?>">change</a>
+<?php endif; ?>
+</h3>
+<table class="expand sortable">
+	<tr>
+		<th>Mouse</th>
+		<th>Sex</th>
+		<th>Alive</th>
+		<th>Strain</th>
+		<th>Min/MaxP</th>
+		<th>Genotype</th>
+		<th>DOB</th>
+		<th>Wks</th>
+		<th>Gen</th>
+	</tr>
+<?php foreach ( $this->parents as $parent ) : ?>
+<tr>
+		<td><a href="<?=$this->url ( array ('controller' => 'mouse', 'action' => 'view', 'id' => $parent['id'] ), null, true )?>"><?=$this->escape ( $parent['assigned_id'] )?></a></td>
+		<td><?=$this->escape ( $parent['sex'] )?></td>
+		<td><?=$this->escape ( $parent['is_alive'] ? 'Y' : 'N' )?></td>
+		<td><a href="<?=$this->url ( array ('controller' => 'strain', 'action' => 'view', 'id' => $parent['strain_id'] ), null, true )?>"><?=$this->escape ( $parent['strain_name'] )?></a></td>
+		<td><?=$this->escape ( $parent['promoter'] )?></td>
+		<td><?=$this->escape ( $parent['genotype'] )?></td>
+		<td><?=$this->escape ( mdb_Globals::formatDateTime($parent['born_on']) )?></td>
+		<td><?=$this->escape ( round($parent['born_days'] / 7, 1) )?></td>
+		<td><?=$this->escape ( $parent['generation'] )?></td>
+	</tr>
+<?php endforeach; ?>
+</table>
+<?php endif; ?>
+<hr />
+<h3><?=$this->weeksinfo?></h3>
+<?php if (count($this->mice) == 0 && $this->litter->weaned_on == '') :?>
+<form id="wean_options" method="post" action="<?=$this->url ( array ('controller' => 'litter', 'action' => 'wean', 'id' => $this->litter->id ), null, true )?>">
+<?=$this->formHidden('id', $this->litter->id)?>
+<?=$this->checkBox('not_viable', $this->litter->not_viable, array(), array('onchange' => 'javascript:clickCounted(this.checked);'))?>
+ <label for="not_viable">This litter is not counted</label>
+<div id="wean_details">
+<div class="span-6 append-1">
+<table>
+<tr><th></th><td></td>&nbsp;</tr>
+<tr>
+<th>Weaned on</th>
+<td><?=$this->dateTextBox('new_weaned_on', date('Y-m-d', strtotime($this->litter->born_on) + 3 * 7 * 24 * 60 * 60) , array('constraints' => array('datePattern' => 'yyyyMMdd')) ,array('style' => 'width:8em;'))?></td>
+</tr>
+<tr>
+<th>Born in this cage</th>
+<td><?=$this->numberTextBox('total_pups', $this->litter->total_pups, array('constraints' => array('min' => 0, 'max' => 99, 'places' => 0)), array('style' => 'width:5em;', 'onchange' => 'WeanCalc(this.id)'))?></td>
+</tr>
+<tr>
+<th>Alive at wean</th>
+<td><?=$this->numberTextBox('alive_pups', $this->litter->alive_pups, array('constraints' => array('min' => 0, 'max' => 99, 'places' => 0)), array('style' => 'width:5em;', 'onchange' => 'WeanCalc(this.id)'))?></td>
+</tr>
+</table>
+</div>
+<div class="span-6 append-1">
+<table>
+<tr><th></th><td></td>&nbsp;</tr>
+<tr>
+<th>Total Females</th>
+<td><?=$this->numberTextBox('total_female_count', zero2empty($this->litter->weaned_female_count + $this->litter->holding_female_count + $this->litter->sacrificed_female_count), array('constraints' => array('min' => 0, 'max' => 99, 'places' => 0)), array('style' => 'width:5em;', 'onchange' => 'WeanCalc(this.id)'))?></td>
+</tr>
+<tr>
+<th>Total Males</th>
+<td><?=$this->numberTextBox('total_male_count', zero2empty($this->litter->weaned_male_count + $this->litter->holding_male_count + $this->litter->sacrificed_male_count), array('constraints' => array('min' => 0, 'max' => 99, 'places' => 0)), array('style' => 'width:5em;', 'onchange' => 'WeanCalc(this.id)'))?></td>
+</tr>
+<tr>
+<th>Unknown Sex CO<sub>2</sub></th>
+<td><?=$this->numberTextBox('sacrificed_nosex_count', zero2empty($this->litter->sacrificed_nosex_count), array('constraints' => array('min' => 0, 'max' => 99, 'places' => 0)), array('style' => 'width:5em;', 'onchange' => 'WeanCalc(this.id)'))?></td>
+</tr>
+</table>
+</div>
+<div class="span-6 last">
+<table>
+<tr>
+	<th></th>
+	<th>Female</th>
+	<th>Male</th>
+</tr>
+<tr>
+<th>Weaned</th>
+<td><?=$this->numberTextBox('weaned_female_count', zero2empty($this->litter->weaned_female_count), array('constraints' => array('min' => 0, 'max' => 99, 'places' => 0)), array('style' => 'width:5em;', 'onchange' => 'WeanCalc(this.id)'))?></td>
+<td><?=$this->numberTextBox('weaned_male_count', zero2empty($this->litter->weaned_male_count), array('constraints' => array('min' => 0, 'max' => 99, 'places' => 0)), array('style' => 'width:5em;', 'onchange' => 'WeanCalc(this.id)'))?></td>
+<td></td>
+</tr>
+<tr>
+<th>Holding</th>
+<td><?=$this->numberTextBox('holding_female_count', zero2empty($this->litter->holding_female_count), array('constraints' => array('min' => 0, 'max' => 99, 'places' => 0)), array('style' => 'width:5em;', 'onchange' => 'WeanCalc(this.id)'))?></td>
+<td><?=$this->numberTextBox('holding_male_count', zero2empty($this->litter->holding_male_count), array('constraints' => array('min' => 0, 'max' => 99, 'places' => 0)), array('style' => 'width:5em;', 'onchange' => 'WeanCalc(this.id)'))?></td>
+<td></td>
+</tr>
+<tr>
+<th>Sacrificed</th>
+<td><?=$this->numberTextBox('sacrificed_female_count', zero2empty($this->litter->sacrificed_female_count), array('constraints' => array('min' => 0, 'max' => 99, 'places' => 0)), array('style' => 'width:5em;'))?></td>
+<td><?=$this->numberTextBox('sacrificed_male_count', zero2empty($this->litter->sacrificed_male_count), array('constraints' => array('min' => 0, 'max' => 99, 'places' => 0)), array('style' => 'width:5em;'))?></td>
+<td></td>
+</tr>
+</table>
+</div>
+</div>
+<?=$this->submitButton('wean_submit', 'Save Born & Alive')?>
+</form>
+<?php else : ?>
+<div class="span-20 last">
+<div class="span-10">
+<h3>Weaned on <?=mdb_Globals::formatDateTime($this->litter->weaned_on)?></h3>
+</div>
+<div class="span-10 last" style="text-align: right;">
+<form method="get" action="<?=$this->url ( array ('controller' => 'litter', 'action' => 'unwean', 'id' => $this->litter->id ), null, true )?>">
+<?=$this->submitButton('undo_wean', 'Undo wean', array(), array('title' => 'Deletes all mice and weaning cages')) ?>
+</form>
+</div>
+</div>
+<?php if ($this->litter->not_viable) :?>
+This litter is not viable / not counted.
+<?php else : ?>
+<div class="span-6 append-1">
+<table>
+<tr><th></th><td></td>&nbsp;</tr>
+<tr>
+<th>Weaned on</th>
+<td><?=mdb_Globals::formatDateTime($this->litter->weaned_on)?></td>
+</tr>
+<tr>
+<th>Born in this cage</th>
+<td><?=$this->litter->total_pups?></td>
+</tr>
+<tr>
+<th>Alive at wean</th>
+<td><?=$this->litter->alive_pups?></td>
+</tr>
+</table>
+</div>
+<div class="span-6 append-1">
+<table>
+<tr><th></th><td></td>&nbsp;</tr>
+<tr>
+<th>Total Females</th>
+<td><?=$this->litter->weaned_female_count + $this->litter->holding_female_count + $this->litter->sacrificed_female_count?></td>
+</tr>
+<tr>
+<th>Total Males</th>
+<td><?=$this->litter->weaned_male_count + $this->litter->holding_male_count + $this->litter->sacrificed_male_count?></td>
+</tr>
+<tr>
+<th>Unknown Sex CO<sub>2</sub></th>
+<td><?=zero2empty($this->litter->sacrificed_nosex_count)?></td>
+</tr>
+</table>
+</div>
+<div class="span-6 last">
+<table>
+<tr>
+	<th></th>
+	<th>Female</th>
+	<th>Male</th>
+</tr>
+<tr>
+<th>Weaned</th>
+<td><?=zero2empty($this->litter->weaned_female_count)?></td>
+<td><?=zero2empty($this->litter->weaned_male_count)?></td>
+</tr>
+<tr>
+<th>Holding</th>
+<td><?=zero2empty($this->litter->holding_female_count)?></td>
+<td><?=zero2empty($this->litter->holding_male_count)?></td>
+</tr>
+<tr>
+<th>Sacrificed</th>
+<td><?=zero2empty($this->litter->sacrificed_female_count)?></td>
+<td><?=zero2empty($this->litter->sacrificed_male_count)?></td>
+</tr>
+</table>
+</div>
+<?php endif; ?>
+<?php if (count($this->mice)) :?>
+<?php
+$mice_all = array();
+$mice_females = array();
+$mice_males = array();
+?>
+<div class="span-20 last">
+<form name="miceform" id="miceform" method="post" action="<?=$this->url ( array ('controller' => 'mouse', 'action' => 'modifyselected'), null, true )?>">
+<?=$this->formHidden('redirect', '/litter/view/id/'. $this->litter->id )?>
+<table class="expand sortable">
+	<tr>
+		<th>Mouse</th>
+		<th>Sex</th>
+		<th>Alive</th>
+		<th>Status</th>
+		<th>Genotype</th>
+		<th>Cage</th>
+	</tr>
+<?php foreach ($this->mice as $mouse) :?>
+<?php
+$mice_all[] = "'".$mouse['id']."'";
+if ( $mouse['sex'] == 'M' ) {
+	$mice_males[] = "'".$mouse['id']."'";
+} elseif ( $mouse['sex'] == 'F' ) {
+	$mice_females[] = "'".$mouse['id']."'";
+}
+?>
+	<tr>
+		<td sorttable_customkey="<?=$this->escape ( $mouse['assigned_id'] )?>"><?=$this->checkBox('selected-'.$mouse['id'], $mouse['id']) ?><a href="<?=$this->url ( array ('controller' => 'mouse', 'action' => 'view', 'id' => $mouse['id'] ), null, true )?>"><?=$this->escape ( $mouse['assigned_id'] )?></a></td>
+		<td><?=$this->escape ( $mouse['sex'] )?></td>
+		<td><?=$this->escape ( $mouse['is_alive'] ? 'Y' : 'N' )?></td>
+		<td><?=$this->escape ( $mouse['status'] )?></td>
+		<td><?=$this->escape ( $mouse['genotype'] )?></td>
+		<td><a href="<?=$this->url ( array ('controller' => $mouse['cagetype'].'-cage', 'action' => 'view', 'id' => $mouse['cage_id'] ), null, true )?>"><?=$this->escape ( $mouse['cage_assigned_id'] )?></a></td>
+	</tr>
+<?php endforeach;?>
+</table>
+<script type="text/javascript">
+function selectMice(scope) {
+
+	var mice_all = new Array(<?=implode(',', $mice_all) ?>);
+	var mice_females = new Array(<?=implode(',', $mice_females) ?>);
+	var mice_males = new Array(<?=implode(',', $mice_males) ?>);
+
+	switch(scope) {
+	case 'all':
+		for (id in mice_all) {
+			dijit.byId('selected-' + mice_all[id]).setChecked(true);
+		}
+		break;
+	case 'none':
+		for (id in mice_all) {
+			dijit.byId('selected-' + mice_all[id]).setChecked(false);
+		}
+		break;
+	case 'males':
+		for (id in mice_all) {
+			dijit.byId('selected-' + mice_all[id]).setChecked(false);
+		}
+		for (id in mice_males) {
+			dijit.byId('selected-' + mice_males[id]).setChecked(true);
+		}
+		break;
+	case 'females':
+		for (id in mice_all) {
+			dijit.byId('selected-' + mice_all[id]).setChecked(false);
+		}
+		for (id in mice_females) {
+			dijit.byId('selected-' + mice_females[id]).setChecked(true);
+		}
+		break;
+	}
+};
+
+function setAction(action) {
+	document.getElementById('modify_action').value = action;
+}
+</script>
+<?=$this->formHidden('modify_action')?>
+Select <a href="javascript:selectMice('all')">all</a>, <a href="javascript:selectMice('none')">none</a>, <a href="javascript:selectMice('females')">females</a>, <a href="javascript:selectMice('males')">males</a>
+<br /><?=$this->submitButton('submit', 'Sacrifice', array(), array('onClick' => 'javascript:setAction(\''.MouseController::MODIFY_SACRIFICE.'\')')) ?> /
+<strong>Genotype:</strong> <input type="text" style="width: 100px;" name="genotype" id="genotype" onKeyPress="return submitenter(this,event,'change_genotype')" /> <?=$this->submitButton('change_genotype', 'Set', array(), array('onClick' => 'javascript:setAction(\''.MouseController::MODIFY_GENOTYPE.'\')')) ?> /
+<strong>Status:</strong> <input type="text" style="width: 100px;" name="status" id="status" onKeyPress="return submitenter(this,event,'change_status')" /> <?=$this->checkBox('also_kill', null, array(), array('checked' => 'checked')) ?><label for="also_kill"> and kill</label> <?=$this->submitButton('change_status', 'Set', array(), array('onClick' => 'javascript:setAction(\''.MouseController::MODIFY_STATUS.'\')')) ?> /
+<?=$this->formHidden('multi_table', 'mice')?>
+<?=$this->comboBox(
+    'multi_tag',
+    null,
+    array(
+		'autocomplete' => 'false',
+    	'hasDownArrow' => 'true',
+		'store'        => 'listMiceTagsStore',
+		'searchAttr'   => 'item',
+		'searchDelay'  => 200,
+		'storeType'    => 'dojox.data.QueryReadStore',
+		'storeParams'  => array('url' => $this->url ( array ('controller' => 'tag', 'action' => 'list', 'format' => 'json' ), null, true )),
+    	'pageSize'     => 200),
+    array('style' => 'width: 100px;') );
+?>
+<?=$this->submitButton('add_multi_tag', 'Tag', array(), array('onClick' => "javascript: document.getElementById('miceform').action = '".$this->url(array('controller' => 'tag', 'action' => 'addselected'), null, true)."';")) ?>
+</form>
+</div>
+<?php endif; ?>
+<?php endif; ?>
+<hr />
+<form name="printweancards" action="<?=$this->url(array ('action' => 'printweancards' )) ?>" method="post">
+<input type="hidden" id="print-<?=$this->litter->id?>" name="print-<?=$this->litter->id?>" value="1" />
+<input type="hidden" id="redirect" name="redirect" value="<?=$this->url(array ('action' => 'view' , 'id' => $this->litter->id))?>" />
+<?=$this->submitButton('printcards', 'Print Wean Card', array(), array('class' => 'noprint')) ?>
+</form>
+<?php
+echo $this->contentPane('tag_pane', null,
+    array('href' => $this->url( array('controller' => 'tag', 'action' => 'view', 'table' => Tags::LITTER, 'item' => $this->litter->id,  'format' => 'html' ), null, true ),
+    	'parseOnLoad' => 'true',
+    	'loadingMessage' => '',
+    	'preload' => 'true'),
+    array('style' => 'padding:2px;')
+        )
+?>
+<?php
+echo $this->contentPane('comment_pane', null,
+    array('href' => $this->url( array('controller' => 'comment', 'action' => 'view', 'table' => Comments::LITTER, 'item' => $this->litter->id,  'format' => 'html' ), null, true ),
+    	'parseOnLoad' => 'true',
+    	'loadingMessage' => '',
+    	'preload' => 'true'),
+    array('style' => 'padding:2px;')
+    )
+?>

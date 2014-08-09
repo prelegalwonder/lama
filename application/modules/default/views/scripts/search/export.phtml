@@ -1,0 +1,67 @@
+<?php
+function composeExportOutput($row, $field, $makeHyperlink = false, $makeText = false) {
+
+	switch ($field->getType()) {
+		case mdb_Search_OutputField::TYPE_DATETIME:
+			// $value = mdb_Globals::formatDateTime($row[$field->getSqlAs()]);
+			$value = $row[$field->getSqlAs()];
+			break;
+		case mdb_Search_OutputField::TYPE_BOOLEAN:
+			$value = $row[$field->getSqlAs()] ? 'Yes' : 'No';
+			break;
+		default:
+			$value = $row[$field->getSqlAs()];
+	}
+	if ($field->getIdSqlAs ()) {
+		$idSqlAs = $field->getIdSqlAs ();
+	} else {
+		$idSqlAs = $field->getIdSqlExpr ();
+	}
+	if ($makeHyperlink && $field->getViewController() && $row [$idSqlAs]) {
+		return quoteCsv ( '=HYPERLINK(' . quoteCsv ( 'http://' . $_SERVER ['SERVER_NAME'] . Zend_Controller_Front::getInstance ()->getBaseUrl () . '/' . $field->getViewController () . '/view/id/' . $row [$idSqlAs] ) . ', ' . quoteCsv ( $value ) . ')', false );
+	} else {
+		return quoteCsv ( $value, $makeText && $field->getIsText () );
+	}
+}
+
+function quoteCsv($value, $isText = false) {
+
+	$hasComma = (strpos ( $value, ',' ) !== null);
+	$hasQuote = (strpos ( $value, '"' ) !== null);
+
+	if ($hasQuote) {
+		$value = str_replace ( '"', '""', $value );
+	}
+
+	if ($isText) {
+		return '=T("' . $value . '")';
+	} elseif ($hasComma || $hasQuote) {
+		return '"' . $value . '"';
+	} else {
+		return $value;
+	}
+}
+
+header ( 'Content-Disposition: attachment; filename="' . str_replace('"', '', $this->title) . '.csv"' );
+header ( 'Cache-Control: no-cache, must-revalidate' );
+header ( 'Content-type: text/csv' );
+
+$line = array ();
+foreach ( $this->fields as $field ) {
+	$line [] = quoteCsv ( $field->getLabel (), $this->makeText );
+	//	$line[] = $field->getLabel();
+}
+;
+echo implode ( ',', $line ) . "\n";
+
+$query = $this->select->query ();
+$row = $query->fetch ();
+while ( $row ) {
+	$line = array ();
+	foreach ( $this->fields as $field ) {
+		$line [] = composeExportOutput ( $row, $field, $this->makeHyperlink, $this->makeText );
+	}
+	echo implode ( ',', $line ) . "\n";
+	$row = $query->fetch ();
+}
+?>

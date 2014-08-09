@@ -1,0 +1,4 @@
+; This file is needed if it is not possible to set add ZendFramework to include_path in php.ini, as often the case in shared installations.
+; zend_framework_path is parent directory of Zend directory (normally ....ZendFramework/library)
+;
+;zend_framework_path=/path/to/ZendFramework/library

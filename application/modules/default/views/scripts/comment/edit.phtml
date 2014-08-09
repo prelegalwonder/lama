@@ -1,0 +1,6 @@
+<h2><?=$this->escape($this->title)?></h2>
+Last modified on <?=$this->escape($this->modified_on)?>
+<?=$this->form?>
+<?php if ($this->canDelete) { ?>
+<a href="<?=$this->deleteURL?>">Delete&hellip;</a>
+<?php } ?>

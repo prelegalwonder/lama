@@ -1,0 +1,25 @@
+<?php
+Zend_Dojo::enableView($this);
+?>
+<?php if (count($this->tags)) : ?>
+<?php
+$max_count = 2;
+foreach ( $this->tags as $tag ){
+	if ($tag['count'] > $max_count) {
+		$max_count = $tag['count'];
+	}
+}
+?>
+<div style="text-align: center; max-width: 790px;">
+<div>
+<?php foreach ( $this->tags as $tag ) : ?>
+<a style="text-decoration: none; background-color:#ffffaa; padding:0 2px 0 2px; font-size: <?=100+round(log(($this->log_base-1)*($tag['count']-1)/($max_count-1)+1, $this->log_base)*100)?>%;" href="<?=$this->url ( array ('controller' => 'tag', 'action' => 'tagged', 'tag' => $tag['tag'] ), null, true )?>"><?=str_replace(' ', '&nbsp;', $this->escape( $tag['tag']) )?></a> &nbsp;
+<?php endforeach; ?>
+</div>
+<?php if ( count($this->tags) >= 100 ) : ?>
+<div style="text-align: right;"><a href="<?=$this->url ( array ('controller' => 'tag', 'action' => 'index' ), null, true )?>">more...</a></div>
+<?php endif; ?>
+</div>
+<?php else : ?>
+There are no tags.
+<?php endif; ?>

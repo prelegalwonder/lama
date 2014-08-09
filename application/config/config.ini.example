@@ -1,0 +1,44 @@
+[general]
+;Database connection settings
+;db.adapter=PDO_MYSQL
+;db.params.host=127.0.0.1
+;db.params.port=3306
+;db.params.username=mousedbuser
+;db.params.password=password
+;db.params.dbname=mousedb
+
+; Message that appears on top of every page
+;system.message=
+
+; File to record caught exceptions.
+; Must be writable by web server process
+;system.logfile=
+
+; Recognized settings: development, production
+;system.environment=production
+
+; Useful for browsers other then Firefox
+;system.debug.firebuglite=yes
+
+; Name of this installation
+;system.title=Mouse Database
+
+; Set to use local copy of dojo instead of default CDN
+; Declaring system.dojo.local will force local source even if
+; system.dojo.cdn.* are declared.
+;system.dojo.local=/dojo
+; see Zend_Dojo::setCdnBase()
+;system.dojo.cdn.base=http://ajax.googleapis.com/ajax/libs/dojo
+; see Zend_Dojo::setCdnVersion()
+;system.dojo.cdn.version=1.2.3
+; see Zend_Dojo::setCdnDojoPath()
+;system.dojo.cdn.dojopath=/dojo/dojo.xd.js
+
+; Set desired timezone to avoid php notices in strict mode
+;system.timezone=America/Vancouver
+
+; If bzr is not in path, set location here
+;system.versions.bzr.binary=/usr/bin/bzr
+
+; Whether to show link to launchpad in footer
+;system.display.footer.launchpad=yes

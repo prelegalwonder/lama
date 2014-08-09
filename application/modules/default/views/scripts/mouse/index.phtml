@@ -1,0 +1,46 @@
+<h2><?=$this->escape($this->title)?></h2>
+<div class="noprint">
+<form action="<?=$this->url ( array ('action' => 'search' ) )?>"
+	method="get"><input type=text size="50" maxlength="500" name="q" /><input
+	type="submit" value="Search Mice" />
+<?php if ($this->canSearch) : ?>
+<a href="<?=$this->url ( array ('controller' => 'search', 'action' => 'view', 'subject' => Searches::SUBJECT_MOUSE ), null, true )?>">advanced</a>
+<?php endif; ?>
+</form>
+</div>
+<br />
+
+<?php if ($this->canNew) : ?>
+<h3 class="noprint"><a
+	href="<?=$this->url ( array ('controller' => 'mouse', 'action' => 'new' ), null, true )?>">New
+mouse</a></h3>
+<br />
+<?php endif; ?>
+
+<h3>Recently modified mice</h3>
+<table class="expand sortable">
+	<tr>
+		<th>Cage</th>
+		<th>Mouse</th>
+		<th>Sex</th>
+		<th>Alive</th>
+		<th>Status</th>
+		<th>Strain</th>
+		<th>Genotype</th>
+		<th>DOB</th>
+		<th>Last Modified</th>
+	</tr>
+<?php foreach ( $this->recently_modified_mice as $mouse ) : ?>
+<tr>
+		<td><a href="<?=$this->url ( array ('controller' => 'cage', 'action' => 'view', 'id' => $mouse['cage_id'] ), null, true )?>"><?=$this->escape ( $mouse['assigned_id'] )?></a></td>
+		<td><a href="<?=$this->url ( array ('controller' => 'mouse', 'action' => 'view', 'id' => $mouse['id'] ), null, true )?>"><?=$this->escape ( $mouse['mouse_id'] )?></a></td>
+		<td><?=$this->escape ( $mouse['sex'] )?></td>
+		<td><?=$this->escape ( $mouse['is_alive'] ? 'Y' : 'N' )?></td>
+		<td><?=$this->escape ( $mouse['status'] )?></td>
+		<td><a href="<?=$this->url ( array ('controller' => 'strain', 'action' => 'view', 'id' => $mouse['strain_id'] ), null, true )?>"><?=$this->escape ( $mouse['strain_name'] )?></a></td>
+		<td><?=$this->escape ( $mouse['genotype'] )?></td>
+		<td><?=$this->escape ( mdb_Globals::formatDateTime($mouse['born_on']) )?></td>
+		<td><?=$this->escape ( mdb_Globals::formatDateTime($mouse['lastmodified']) )?></td>
+	</tr>
+<?php endforeach; ?>
+</table>

@@ -1,0 +1,67 @@
+@CHARSET "UTF-8";
+
+body, html {
+	width:100%; 
+	height:100%;
+	font-family: sans-serif;
+}
+
+form dl dd {
+	margin-left: 0;
+}
+
+
+/* override dojo.Toaster */
+.dijitToasterContainer {
+	font-size:1.25em;
+}
+ 
+#nav-menu ul {
+	list-style: none;
+	margin:0;
+}
+
+#nav-menu ul li {
+	margin-bottom: 1em;
+	font-size: 1.25em;
+	line-height:1;
+}
+
+#nav-menu ul li a {
+	text-decoration: none;
+}
+
+#header-title {
+	font-size: 1.5em;
+	color: gray; 
+	text-decoration: none;
+	line-height:1;
+}
+
+/* Sortable tables */
+table.sortable thead {
+    cursor: default;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+td {
+	vertical-align: top;
+}
+label {
+	font-weight: normal;
+}
+ul.errors {
+	color: red;
+}
+hr {
+	margin-top: .6em;
+	margin-bottom: .6em;
+	height: 1px;
+}
+
+#footer {
+	border-top:1px solid #dddddd;
+}

@@ -1,0 +1,67 @@
+<?php
+Zend_Dojo::enableView($this);
+?>
+<h2><?=$this->escape($this->title)?></h2>
+<hr />
+<h3>New Search:</h3>
+<h4>
+<?php
+$newList = array();
+if ($this->canViewStrains) {
+    $newList[] = '<a href="'.$this->url ( array ('controller' => 'search', 'action' => 'view', 'subject' => Searches::SUBJECT_STRAIN ), null, true ).'">Strain</a>';
+}
+if ($this->canViewMice) {
+    $newList[] = '<a href="'.$this->url ( array ('controller' => 'search', 'action' => 'view', 'subject' => Searches::SUBJECT_MOUSE ), null, true ).'">Mouse</a>';
+}
+if ($this->canViewLitters) {
+    $newList[] = '<a href="'.$this->url ( array ('controller' => 'search', 'action' => 'view', 'subject' => Searches::SUBJECT_LITTER ), null, true ).'">Litter</a>';
+}
+ if ($this->canViewBreedingCages) {
+     $newList[] = '<a href="'.$this->url ( array ('controller' => 'search', 'action' => 'view', 'subject' => Searches::SUBJECT_BREEDING_CAGE ), null, true ).'">Breeding Cage</a>';
+}
+ if ($this->canViewHoldingCages) {
+     $newList[] = '<a href="'.$this->url ( array ('controller' => 'search', 'action' => 'view', 'subject' => Searches::SUBJECT_HOLDING_CAGE ), null, true ).'">Holding Cage</a>';
+}
+if ($this->canViewWeaningCages) {
+    $newList[] = '<a href="'.$this->url ( array ('controller' => 'search', 'action' => 'view', 'subject' => Searches::SUBJECT_WEANING_CAGE ), null, true ).'">Weaning Cage</a>';
+}
+if ($this->canViewTransfers) {
+    $newList[] = '<a href="'.$this->url ( array ('controller' => 'search', 'action' => 'view', 'subject' => Searches::SUBJECT_TRANSFER ), null, true ).'">Transfers</a>';
+}
+echo implode(' | ', $newList);
+?>
+</h4>
+<hr />
+<p>Show searches created by <?php echo $this->filteringSelect(
+    'user_id',
+    $this->user_id,
+    array(
+		'autocomplete' => 'false',
+    	'hasDownArrow' => 'true',
+		'store'        => 'UserStore',
+		'searchAttr'   => 'item',
+		'searchDelay'  => 200,
+		'storeType'    => 'dojox.data.QueryReadStore',
+		'storeParams'  => array('url' => $this->url ( array ('controller' => 'user', 'action' => 'listsearch', 'format' => 'json', 'empty' => 'yes' ), null, true )),
+    	'pageSize'     => 200,
+		'onchange'     => "url = '".$this->url ( array ('controller' => 'search', 'action' => 'index' ), null, true )."'; if (this.getValue() == '') { window.location = url +'/index/user_id/all'} else {window.location = url+'/index/user_id/'+this.getValue();}",
+    ) );
+?></p>
+<table class="expand sortable">
+<tr>
+	<th>Type</th>
+	<th>Title</th>
+	<th>Public</th>
+	<th>Author</th>
+	<th>Modified on</th>
+</tr>
+<?php foreach ( $this->searches as $search ) : ?>
+<tr>
+	<td><?=$this->escape ( ucfirst($search['subject']) )?></td>
+	<td><a href="<?=$this->url ( array ('controller' => 'search', 'action' => 'view', 'id' => $search['id'] ), null, true )?>"><?=$this->escape ( $search['title'] )?></a></td>
+	<td><?=$search['public'] ? 'Yes' : 'No' ?></td>
+	<td><a href="<?=$this->url ( array ('controller' => 'search', 'action' => 'index', 'user_id' => $search['user_id'] ), null, true )?>"><?=$this->escape ( $search['username'] )?></a></td>
+	<td><?=$this->escape ( mdb_Globals::formatDateTime($search['lastmodified']) )?></td>
+</tr>
+<?php endforeach; ?>
+</table>

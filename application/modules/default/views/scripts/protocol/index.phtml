@@ -1,0 +1,18 @@
+<h2><?=$this->escape($this->title)?></h2>
+<?php if ($this->canNew) : ?>
+<h3 class="noprint"><a
+	href="<?=$this->url ( array ('controller' => $this->view_controller, 'action' => 'new' ), null, true )?>">New Protocol</a></h3>
+<br />
+<?php endif; ?>
+<table class="expand sortable">
+	<tr>
+		<th>Protocol</th>
+		<th>Modifed on</th>
+	</tr>
+<?php foreach ( $this->items as $item ) : ?>
+<tr>
+		<td><a href="<?=$this->url ( array ('controller' => $this->view_controller, 'action' => 'view', 'id' => $item->id ), null, true )?>"><?=$this->escape ( $item->protocol_name )?></a></td>
+		<td><?=$this->escape ( mdb_Globals::formatDateTime($item->lastmodified) )?></td>
+	</tr>
+<?php endforeach; ?>
+</table>

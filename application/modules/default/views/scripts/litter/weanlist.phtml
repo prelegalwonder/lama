@@ -1,0 +1,56 @@
+<?php
+$this->addHelperPath('Zend/Dojo/View/Helper/', 'Zend_Dojo_View_Helper');
+?>
+<h2><?=$this->escape($this->title)?></h2>
+<form action="<?=$this->url ( array ('action' => 'weanlist' ) )?>" method="get">
+Litters born
+<?=$this->numberSpinner('from', $this->fromDays, array('constraints' => array('min' => 0, 'max' => 99, 'places' => 0)), array('maxlength' => 2, 'style' => 'width:5em;'))?>
+ to
+<?=$this->numberSpinner('to', $this->toDays, array('constraints' => array('min' => 0, 'max' => 99, 'places' => 0)), array('maxlength' => 2, 'style' => 'width:5em;'))?>
+ days ago.
+<?=$this->submitButton('submit', 'List')?>
+<br />
+<?=$this->textBox('search', $this->search, array(), array('maxlength' => 500, 'style' => 'width:35em;'))?>
+<br />
+<span class="small">Additional search criteria, ie. strain name, mating type, breeding cage</span>
+<br />
+<?=$this->checkBox('weaned', null, array(), array('checked' => $this->weaned ? 'checked' : ''))?>
+<label for="weaned" style="font-weight:normal;"> Include weaned litters</label>
+</form>
+<br />
+Litters born between
+<?=gmdate('ymd', (floor(time() / 86400) - max($this->fromDays,$this->toDays)) * 86400) ?> and
+<?=gmdate('ymd', (floor(time() / 86400) - min($this->fromDays,$this->toDays)) * 86400) ?> are at 6 weeks between
+<?=gmdate('ymd', (floor(time() / 86400) - max($this->fromDays,$this->toDays)) * 86400 + 6 * 7 * 86400) ?> and
+<?=gmdate('ymd', (floor(time() / 86400) - min($this->fromDays,$this->toDays)) * 86400 + 6 * 7 * 86400) ?>
+<br />
+<?=count($this->weanlist)?> litters listed.
+<form name="printweancards" action="<?=$this->url(array ('action' => 'printweancards' )) ?>" method="post">
+<table class="expand sortable">
+	<tr>
+		<th class="sorttable_nosort noprint">Qty</th>
+		<th>Litter</th>
+		<th>Born On</th>
+		<th>Weaned On</th>
+		<th>Alive Pups</th>
+		<th>Strain</th>
+		<th>Gen.</th>
+		<th>Mating Type</th>
+		<th>Assigned To</th>
+	</tr>
+<?php foreach ( $this->weanlist as $litter ) : ?>
+<tr>
+		<td class="noprint"><?=$this->textBox('print-'.$litter['id'], null, array(), array('size' => '1', 'maxlength' => '1', 'style' => 'width:1.5em;'))?></td>
+		<td><a href="<?=$this->url ( array ('controller' => 'litter', 'action' => 'view', 'id' => $litter['id'] ), null, true )?>"><?=$this->escape ( $litter['assigned_id'] )?></a></td>
+		<td><?=$this->escape ( mdb_Globals::formatDateTime($litter['born_on']) )?></td>
+		<td><?=$this->escape ( mdb_Globals::formatDateTime($litter['weaned_on']) )?></td>
+		<td><?=$this->escape ( $litter['alive_pups'] )?></td>
+		<td><a href="<?=$this->url ( array ('controller' => 'strain', 'action' => 'view', 'id' => $litter['strain_id'] ), null, true )?>"><?=$this->escape ( $litter['strain_name'] )?></a></td>
+		<td><?=$this->escape ( $litter['generation'] )?></td>
+		<td><a href="<?=$this->url ( array ('controller' => 'breeding-cage', 'action' => 'view', 'id' => $litter['breeding_cage_id'] ), null, true )?>"><?=$this->escape ( $litter['mating_type'] )?></a></td>
+		<td><?=$this->escape ( $litter['assigned_user'] )?></td>
+	</tr>
+<?php endforeach; ?>
+</table>
+<?=$this->submitButton('printcards', 'Print Wean Cards', array(), array('class' => 'noprint')) ?>
+</form>

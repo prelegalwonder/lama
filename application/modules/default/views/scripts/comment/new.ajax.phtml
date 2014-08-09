@@ -1,0 +1,11 @@
+<?php Zend_Dojo_View_Helper_Dojo::setUseDeclarative(true); ?>
+<hr />
+<?php
+$submit = $this->form->getElement('submitComment');
+$submit->setOptions(array(
+			'onClick' => 'dojo.xhrPost({form:"comment_form", load:function(response, ioArgs) {dijit.byId("comment_pane").refresh(); return response;}, error:function(response, ioArgs) {alert(response); return response;} })',
+		));
+$submit->removeDecorator('DtDdWrapper');
+
+?>
+<?=$this->form?>

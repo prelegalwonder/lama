@@ -1,0 +1,30 @@
+<?php Zend_Dojo::enableView($this);?>
+<div id="comments">
+<?php
+foreach($this->comments as $comment) {
+
+	if ($this->userid == $comment['user_id'] ) {
+		$whoSaid = 'You';
+	} else {
+		$whoSaid = $comment['username'];
+	}
+?>
+<h4 style="margin-bottom: 0.5em">
+<?=$this->escape($whoSaid)?> said on <?=$this->escape(mdb_Globals::formatDateTime($comment['modified_on']))?>:
+<span class="small">
+<?php if ($this->canEditComment && $this->userid == $comment['user_id']): ?>
+<a href="<?=$this->editCommentURL?>/id/<?=$comment['id']?>">Edit</a>
+<?php endif; ?>
+<?php if ($this->role_id == mdb_Acl::ROLE_ADMIN || ($this->canDeleteComment && $this->userid == $comment['user_id'])): ?>
+<a href="<?=$this->deleteCommentURL?>/id/<?=$comment['id']?>">Delete</a>
+<?php endif; ?>
+</span>
+</h4>
+<div>
+<blockquote style="margin-top:0; margin-bottom:0.25em;">
+<?=nl2br($this->escape($comment['comment']))?>
+</blockquote>
+<hr />
+</div>
+<?php } ?>
+</div>

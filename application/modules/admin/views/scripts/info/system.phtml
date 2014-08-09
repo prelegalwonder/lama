@@ -1,0 +1,106 @@
+<?php
+
+function fancy_bytes ($bytes) {
+
+	$labels = array('bytes' , 'KB' , 'MB' , 'GB' , 'TB' , 'PB');
+	foreach ($labels as $label) {
+		if ($bytes < 1024) {
+			break;
+		}
+		$bytes = $bytes / 1024;
+	}
+	return round($bytes, 2) . ' ' . $label;
+}
+
+function gen_uptime ($time = 0) {
+
+	$days = (int) floor($time / 86400);
+	$hours = (int) floor($time / 3600) % 24;
+	$minutes = (int) floor($time / 60) % 60;
+	$seconds = (int) $time % 60;
+	$uptime = '';
+	if ($days == 1) {
+		$uptime = "$days day, ";
+	} elseif ($days > 1) {
+		$uptime = "$days days, ";
+	}
+	if ($hours == 1) {
+		$uptime .= "$hours hour";
+	} elseif ($hours > 1) {
+		$uptime .= "$hours hours";
+	}
+	if ($uptime && $minutes) {
+		if ($seconds) {
+			$uptime .= ", ";
+		} else{
+			$uptime .= " and ";
+		}
+	}
+	if ($minutes) {
+		$uptime .= "$minutes minute";
+		if ($minutes > 1) {
+			$uptime .= "s";
+		}
+		if ($seconds) {
+			$uptime .= " and ";
+		}
+	}
+	if ($seconds) {
+		$uptime .= "$seconds second";
+		if ($seconds > 1) {
+			$uptime .= "s";
+		}
+	}
+
+	return $uptime;
+}
+?>
+<h2><?=$this->escape($this->title)?></h2>
+<div><a href="http://www.apache.org/">Apache</a> v. <?=$_SERVER["SERVER_SOFTWARE"]?>
+<br />
+<a href="http://www.mysql.com/">MySQL</a> v. <?=$this->mysql_version?>
+<br />
+<a href="http://www.php.net/">PHP</a> v. <a
+	href="<?=$this->url(array('module' => 'admin' , 'controller' => 'info' , 'action' => 'php'), null, true)?>"><?=phpversion()?></a>
+<br />
+<a href="http://framework.zend.com/">Zend Framework</a> v. <?=Zend_Version::VERSION?>
+<br />
+<a href="http://www.dojotoolkit.org/">Dojo Toolkit</a> v. <script
+	type="text/javascript">document.write(dojo.version);</script> <br />
+<br />
+<?php
+foreach (array('uname -mnrs' , 'uptime') as $command) :
+	?>
+<h5 style="margin-bottom:0;"><?=$command?></h5>
+<pre style="margin-top:0;"><?=exec($command)?></pre>
+<?php
+endforeach;
+?>
+<h5 style="margin-bottom:0;">code revision</h5>
+<pre><?php chdir(dirname(dirname(__FILE__))); system($this->bzr_binary.' log -l 1')?></pre>
+</div>
+<div>
+<h5 style="margin-bottom:0;">database <?=$this->mysql_database?></h5>
+<p>Database uptime is <?=gen_uptime($this->mysql_uptime['Value'])?></p>
+<p><a href="<?=$this->url(array('action' => 'backup'))?>">Get complete database dump as .sql file</a></p>
+<table class="expand sortable">
+	<tr>
+		<th>Table</th>
+		<th>Rows</th>
+		<th class="sorttable_numeric">Size</th>
+		<th>Updated</th>
+	</tr>
+<?php
+foreach ($this->tables as $table) :
+	?>
+	<tr>
+		<td><?=$this->escape($table['Name'])?></td>
+		<td><?=$this->escape($table['Rows'])?></td>
+		<td sorttable_customkey="<?=$table['Data_length']?>>"><?=$this->escape(fancy_bytes($table['Data_length']))?></td>
+		<td><?=$this->escape($table['Update_time'])?></td>
+	</tr>
+<?php
+endforeach;
+?>
+</table>
+</div>

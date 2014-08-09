@@ -1,0 +1,42 @@
+<?php
+function Ip2Html($ip) {
+
+    if ($ip) {
+        $host = gethostbyaddr($ip);
+        if ($host == $ip) {
+            return $ip;
+        } else {
+            return '<abbr title="'.$ip.'">'.$host.'</abbr>';
+        }
+    } else {
+        return $ip;
+    }
+}
+?>
+<h2><?=$this->escape($this->title)?></h2>
+<h3 class="noprint"><a href="<?=$this->url ( array ('module' => 'admin', 'controller' => 'user', 'action' => 'new' ), null, true )?>">New user</a></h3>
+<br />
+<?php if (count($this->users)) : ?>
+<table class="expand sortable">
+	<tr>
+		<th>Username</th>
+		<th>Role</th>
+		<th>Login enabled</th>
+		<th>Has password</th>
+		<th>Last activity</th>
+		<th>Last IP</th>
+	</tr>
+<?php foreach ( $this->users as $user ) : ?>
+<tr<?=($user['active'] && $user['has_password']) ? '' : ' style="color:gray;"';?>>
+		<td><a href="<?=$this->url ( array ('module' => 'admin', 'controller' => 'user', 'action' => 'view', 'id' => $user['id'] ), null, true )?>"><?=$this->escape ( $user['username'] )?></a></td>
+		<td><?=$this->escape ( $user['role_name'] )?></td>
+		<td><?=$this->escape ( $user['active'] ? 'Yes' : 'No')?></td>
+		<td><?=$this->escape ( $user['has_password'] ? 'Yes' : 'No' )?></td>
+		<td><?=$this->escape ( $user['last_seen'] == '0000-00-00 00:00:00' ? 'Unknown' : $user['last_seen'] )?></td>
+		<td><?=($this->resolveIP ? Ip2Html($user['last_ip']) : $user['last_ip'])?></td>
+	</tr>
+<?php endforeach; ?>
+</table>
+<?php else :?>
+Haven't seen anybody lately.
+<?php endif;?>

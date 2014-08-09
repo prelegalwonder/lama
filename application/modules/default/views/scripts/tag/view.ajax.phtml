@@ -1,0 +1,58 @@
+<?php
+Zend_Dojo::enableView($this);
+Zend_Dojo_View_Helper_Dojo::setUseDeclarative(true);
+?>
+<div id="tags">
+<hr />
+<h4 style="display:inline;">Tags:</h4>
+<?php
+$tag_num = 0;
+foreach($this->tags as $tag) {
+	$tag_num++;
+	if ($this->userid == $tag['user_id'] ) {
+		$whoSaid = 'you';
+	} elseif($tag['username']) {
+		$whoSaid = $tag['username'];
+	} else {
+		$whoSaid = 'unknown';
+	}
+?>
+<div id= "tag_num_<?=$tag_num?>" dojoType="dijit.form.DropDownButton">
+<span><?=$tag['tag']?></span>
+	<div dojoType="dijit.Menu" style="width:auto;">
+		<div dojoType="dijit.MenuItem" label="List all like this"
+			onclick="window.location='<?=$this->url( array ('controller' => 'tag', 'action' => 'tagged', 'tag' => $tag['tag']), null, true )?>';"></div>
+<?php if ($this->canRemoveTag) : ?>
+		<div dojoType="dijit.MenuItem" label="Remove tag from this item"
+			onclick="dojo.xhrGet({url:'<?=$this->url( array ('controller' => 'tag', 'action' => 'remove', 'table' => $this->ref_table, 'item' => $this->ref_item_id, 'tag' => $tag['tag']), null, true )?>', load:function(response, ioArgs) {dijit.byId('tag_num_<?=$tag_num?>').destroy(); return response;}, error:function(response, ioArgs) {dojo.publish('mdbMessage', [{ message: response, type: 'error'}]); return response;} })"></div>
+<?php endif; ?>
+<?php if ($whoSaid) : ?>
+		<div dojoType="dijit.MenuItem" label="<em>tagged by <?=$this->escape($whoSaid)?></em>"
+			onclick="window.location='<?=$this->url( array ('controller' => 'tag', 'action' => 'index', 'user_id' => $tag['user_id']), null, true )?>';"></div>
+<?php endif; ?>
+	</div>
+</div>
+<?php } ?>
+<?php if ($this->canAddTag) :?>
+<form style="display:inline-block;" id="add_tag_form" action="<?=$this->url ( array ('controller' => 'tag', 'action' => 'add'), null, true )?>" method="post">
+<input type="hidden" name="table" value="<?=$this->ref_table?>">
+<input type="hidden" name="item" value="<?=$this->ref_item_id?>">
+<?=$this->comboBox(
+    'tag',
+    null,
+    array(
+		'autocomplete' => 'false',
+    	'hasDownArrow' => 'true',
+		'store'        => 'listTagsStore',
+		'searchAttr'   => 'item',
+		'searchDelay'  => 200,
+		'storeType'    => 'dojox.data.QueryReadStore',
+		'storeParams'  => array('url' => $this->url ( array ('controller' => 'tag', 'action' => 'list', 'table' => $this->ref_table, 'ref_id' => $this->ref_item_id, 'format' => 'json' ), null, true )),
+    	'pageSize'     => 200)
+     );
+?>
+<?=$this->button('add_tag', 'Tag', array('onClick' => 'dojo.xhrPost({form:"add_tag_form", load:function(response, ioArgs) {dijit.byId("tag_pane").refresh(); return response;}, error:function(response, ioArgs) {dojo.publish("mdbMessage", [{ message: response, type: "error"}]); return response;} })'))?>
+</form>
+<?php endif; ?>
+</div>
+<?=$this->add_hr?>

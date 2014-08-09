@@ -1,0 +1,125 @@
+<?php Zend_Dojo::enableView($this);?>
+<?php
+
+$this->dojo()->requireModule('dijit.Dialog');
+
+function composeOutput($view, $row, $field) {
+
+	switch ($field->getType()) {
+		case mdb_Search_OutputField::TYPE_DATETIME:
+			$value = $view->escape(mdb_Globals::formatDateTime($row[$field->getSqlAs()]));
+			break;
+		case mdb_Search_OutputField::TYPE_BOOLEAN:
+			$value = $view->escape($row[$field->getSqlAs()] ? 'Yes' : 'No');
+			break;
+		default:
+			$value = $view->escape($row[$field->getSqlAs()]);
+	}
+    if ($field->getViewController()) {
+        if ($field->getIdSqlAs()) {
+            $idSqlAs = $field->getIdSqlAs();
+        } else {
+            $idSqlAs = $field->getIdSqlExpr();
+        }
+        return '<a href="'.Zend_Controller_Front::getInstance()->getBaseUrl().'/'.$field->getViewController().'/view/id/'.$row[$idSqlAs].'">'.$value.'</a>';
+    } else {
+        return $value;
+    }
+}
+?>
+<h2><?=$this->escape($this->title)?></h2>
+<?php if ($this->fetch) :?>
+<?=$this->button('show_search_options', 'Show search details', array('onclick' => "document.getElementById('search_options').style.display = ''; dijit.byId('show_search_options').destroy()"))?>
+<div id="search_options" style="display:none;">
+<?php endif; ?>
+<?=$this->search;?>
+<?=$this->sql?>
+<?php if ($this->search_id) : ?>
+<?php
+echo $this->contentPane('tag_pane', null,
+    array('href' => $this->url( array('controller' => 'tag', 'action' => 'view', 'table' => Tags::SEARCH, 'item' => $this->search_id,  'format' => 'html' ), null, true ),
+    	'parseOnLoad' => 'true',
+    	'loadingMessage' => '',
+    	'preload' => 'true'),
+    array('style' => 'padding:2px;')
+        )
+?>
+<?php
+echo $this->contentPane('comment_pane', null,
+    array('href' => $this->url( array('controller' => 'comment', 'action' => 'view', 'table' => Comments::SEARCH, 'item' => $this->search_id,  'format' => 'html' ), null, true ),
+    	'parseOnLoad' => 'true',
+    	'loadingMessage' => '',
+    	'preload' => 'true'),
+    array('style' => 'padding:2px;')
+    )
+?>
+<?php endif; ?>
+<?php if ($this->fetch) :?>
+</div>
+<?php endif; ?>
+<?php if ($this->fetch) :?>
+<h3 id="record_count" style="margin-top:20px; display:none;">&nbsp;</h3>
+<?php
+try {
+$rowCount = 0;
+$query = $this->select->query();
+$row = $query->fetch();
+?>
+<table class="expand" id="search_results" style="margin-top:1em;">
+<thead><tr>
+<?php foreach ($this->fields as $field) : ?>
+<th><?=$field->getLabel()?></th>
+<?php endforeach; ?>
+</tr></thead>
+<tbody>
+<?php
+while ($row) {
+	$rowCount++;
+	echo '<tr>';
+	$cache_line_count = 0;
+	foreach ($this->fields as $field) {
+		echo '<td>'.composeOutput($this, $row, $field).'</td>';
+	}
+	echo '</tr>';
+	$row = $query->fetch();
+}
+?>
+</tbody>
+</table>
+<script type="text/javascript">
+document.getElementById('record_count').innerHTML = '<?=$rowCount.' records found'?>';
+document.getElementById('record_count').style.display = '';
+<?php if ($rowCount <= 1000) : ?>
+sorttable.makeSortable(document.getElementById('search_results'));
+<?php endif; ?>
+</script>
+<?php
+} catch (Zend_Db_Statement_Exception $e) {
+	echo '<div class="error">'.$e->getMessage().'<hr />'.$this->select->assemble().'<hr />There is probably a bug in this software. Please save this query with current settings and notify system administrator.</div>';
+	mdb_Log::Write('unable to execute search: '.$e->__toString());
+
+}
+?>
+<?php endif; ?>
+<div id="exportDialog" dojoType="dijit.Dialog" title="Export Options" style="display:none;">
+<div style="padding:1em;">
+<?=$this->checkBox('exportUseT')?>
+<label for="exportUseT"> Add =T() to avoid automatic date detection in Excel</label>
+<br />
+<?=$this->checkBox('exportUseHyperlink')?>
+<label for="exportUseHyperlink"> Add =HYPERLINK() to enable linking from Excel to this website</label>
+<br /><br />
+<?=$this->button('exportSubmit', 'Export', array('onclick' => "document.getElementById('export_add_t').value = dijit.byId('exportUseT').checked; document.getElementById('export_add_hyperlink').value = dijit.byId('exportUseHyperlink').checked; document.getElementById('search_submit_reason').value = 'export'; dijit.byId('".$this->search->getForm()->getName()."').submit(); dijit.byId('exportDialog').hide() "))?>
+<?=$this->button('exportCancel', 'Cancel', array('onclick' => "dijit.byId('exportDialog').hide()"))?>
+</div>
+</div>
+<?php if ($this->search_id) : ?>
+<div id="deleteDialog" dojoType="dijit.Dialog" title="Confirm Delete" style="display:none;">
+<div style="padding:1em; max-width:500px;">
+Are you sure you want to delete &ldquo;<?=$this->escape($this->title)?>&rdquo;?
+<br /><br />
+<?=$this->button('deleteSubmit', 'Delete', array('onclick' => 'window.location = \''.$this->url( array ('controller' => 'search', 'action' => 'delete', 'id' => $this->search_id ), null, true ).'\''))?>
+<?=$this->button('deleteCancel', 'Cancel', array('onclick' => "dijit.byId('deleteDialog').hide()"))?>
+</div>
+</div>
+<?php endif; ?>

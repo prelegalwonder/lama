@@ -1,0 +1,37 @@
+<?php
+
+$this->placeholder ( 'title' )->set ( $this->title );
+?>
+<h2><?=$this->escape($this->title)?></h2>
+<div class="noprint">
+<form action="<?=$this->url ( array ('action' => 'search' ) )?>"
+	method="get"><input type=text size="50" maxlength="500" name="q" /><input
+	type="submit" value="Search Litters" />
+<?php if ($this->canSearch) : ?>
+<a href="<?=$this->url ( array ('controller' => 'search', 'action' => 'view', 'subject' => Searches::SUBJECT_LITTER ), null, true )?>">advanced</a>
+<?php endif; ?>
+</form>
+</div>
+<br />
+<p style="color:gray">New litters are created on <a href="<?=$this->url ( array ('controller' => 'breeding-cage' ), null, true )?>">breeding cage pages</a>.</p>
+<h3>Recently modified litters</h3>
+<table class="expand sortable">
+	<tr>
+		<th>Litter</th>
+		<th>Born On</th>
+		<th>Weaned On</th>
+		<th>Alive Pups</th>
+		<th>Strain</th>
+		<th>Modifed on</th>
+	</tr>
+<?php foreach ( $this->recently_modified_litters as $litter ) : ?>
+<tr>
+		<td><a href="<?=$this->url ( array ('controller' => 'litter', 'action' => 'view', 'id' => $litter['id'] ), null, true )?>"><?=$this->escape ( $litter['assigned_id'] )?></a></td>
+		<td><?=$this->escape ( mdb_Globals::formatDateTime($litter['born_on']) )?></td>
+		<td><?=$this->escape ( mdb_Globals::formatDateTime($litter['weaned_on']) )?></td>
+		<td><?=$this->escape ( $litter['alive_pups'] )?></td>
+		<td><a href="<?=$this->url ( array ('controller' => 'strain', 'action' => 'view', 'id' => $litter['strain_id'] ), null, true )?>"><?=$this->escape ( $litter['strain_name'] )?></a></td>
+		<td><?=$this->escape ( mdb_Globals::formatDateTime($litter['lastmodified']) )?></td>
+	</tr>
+<?php endforeach; ?>
+</table>

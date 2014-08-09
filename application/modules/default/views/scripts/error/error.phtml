@@ -1,0 +1,9 @@
+<h2><?=$this->escape($this->title)?></h2>
+
+<?php if ($this->message): ?>
+<p>The following error occurred:</p>
+<h5><?php echo $this->message ?></h5>
+<div style="overflow:auto">
+<pre><?=$this->stacktrace?></pre>
+</div>
+<?php endif; ?>
